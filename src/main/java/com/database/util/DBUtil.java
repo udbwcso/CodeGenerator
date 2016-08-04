@@ -6,11 +6,14 @@ import com.common.util.PropertiesUtil;
 import java.io.IOException;
 import java.sql.*;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by Administrator on 2016/7/28.
  */
 public class DBUtil {
+    private static Logger log = Logger.getLogger(DBUtil.class.getName());
 
     public static Connection getConnection() {
         Connection connection = null;
@@ -19,11 +22,11 @@ public class DBUtil {
             Class.forName(properties.getProperty("driver.class"));
             connection = DriverManager.getConnection(properties.getProperty("url"), properties);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "read properties error", e);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "driver class error", e);
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "get database connection error", e);
         }
         return connection;
     }
@@ -40,7 +43,7 @@ public class DBUtil {
                 connection.close();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "close error", e);
         }
     }
 }

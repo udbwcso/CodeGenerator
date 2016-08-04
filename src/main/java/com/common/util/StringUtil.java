@@ -126,10 +126,13 @@ public class StringUtil {
         String[] strings = map.keySet().toArray(new String[0]);
         List<String> wordList = new ArrayList<String>();
         for (int i = 0; i < strings.length; i++) {
+            if(map.get(strings[i]) == null){//已经在map中删除这个单词
+                continue;
+            }
             String word = strings[i];
             Integer cnt = 0;
             for (int j = 0; j < strings.length; j++) {
-                if(i == j){
+                if(i == j || map.get(strings[j]) == null){
                     continue;
                 }
                 if(word.contains(strings[j])){

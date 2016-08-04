@@ -1,7 +1,5 @@
 package com.code.entity;
 
-import com.common.Constants;
-import com.common.util.HttpClientUtil;
 import com.common.util.PropertiesUtil;
 import com.common.util.StringUtil;
 import com.database.util.TableUtil;
@@ -13,6 +11,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import java.io.InputStream;
+import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,7 +21,9 @@ import java.util.logging.Logger;
  */
 public class EntityGenerator {
 
-    public static Logger log = Logger.getLogger(EntityGenerator.class.getName());
+    private static Logger log = Logger.getLogger(EntityGenerator.class.getName());
+
+    private static final String SEARCH_URL = "http://cn.bing.com/search?q=";
 
 
     public static String getEntityCode(String catalog, String schemaPattern,
@@ -57,39 +58,49 @@ public class EntityGenerator {
     }
 
     /**
+     * 根据字段名获取其按照驼峰命名规则的名称
+     * @param column 字段名
+     * @return
+     */
+    public static String getField(String column){
+        String[] strings = search(column);
+        Map<String, Integer> wordMap = wordStatistics(column, strings);
+        Set<String> words = StringUtil.filter(wordMap);
+        String rst = StringUtil.camelCased(words, column);
+        return StringUtil.firstLetterLowercase(rst);
+    }
+
+    /**
      * 根据字段名称获取成员变量名称,
      * 在http://cn.bing.com查询字段名称,
      * 用Jsoup解析查询结果并取值.
-     *
      * @param column 字段名称
      * @return
      */
-    public static String getField(String column) {
+    public static String[] search(String column) {
         InputStream is = null;
         Document doc = null;
         // create URL string
-        String url = "http://cn.bing.com/search?q=" + column;
+        String url = SEARCH_URL + column;
         log.log(Level.INFO, url);
         try {
             // connect & download html
-            is = HttpClientUtil.downloadAsStream(url);
+//            is = HttpClientUtil.doGet(url, null);
             // parse html by Jsoup
-            doc = Jsoup.parse(is, Constants.DEFAULT_ENCODING, "");
+            doc = Jsoup.parse(new URL(url), 6000);
+//            doc = Jsoup.parse(is, Constants.DEFAULT_ENCODING, "");
             //取所有查询结果
             Elements elements = doc.getElementById("b_results").getElementsByTag("strong");
             String result = elements.html();
-            Map<String, Integer> wordMap = wordStatistics(column, result.split("\\n"));
-            Set<String> words = StringUtil.filter(wordMap);
-            String rst = StringUtil.camelCased(words, column);
-            return StringUtil.firstLetterLowercase(rst);
+            return result.split("\\n");
         } catch (Exception e) {
-
+            log.log(Level.SEVERE, "search column error", e);
         } finally {
             IOUtils.closeQuietly(is);
             is = null;
             doc = null;
         }
-        return column.toLowerCase();
+        return new String[0];
     }
 
 
@@ -100,7 +111,7 @@ public class EntityGenerator {
      * @return
      */
     private static Map<String, Integer> wordStatistics(String column, String[] args) {
-        Set<String> wordSet;
+        Set<String> wordSet = null;
         Map<String, Integer> wordMap = new HashMap<String, Integer>();
         for (String arg : args) {
             arg = StringUtil.filter(arg);
