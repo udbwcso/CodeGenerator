@@ -50,7 +50,7 @@ public class EntityGenerator {
                 }
             }
             column.put("field", field);
-            column.put("firstUpperCaseField", StringUtil.firstLetterUppercase(field));
+            column.put("firstUpperCaseField", StringUtil.uppercase(field, 0, 1));
         }
         table.put("entity", entityName);
         table.put("columnList", columnList);
@@ -67,7 +67,7 @@ public class EntityGenerator {
         Map<String, Integer> wordMap = wordStatistics(column, strings);
         Set<String> words = StringUtil.filter(wordMap);
         String rst = StringUtil.camelCased(words, column);
-        return StringUtil.firstLetterLowercase(rst);
+        return StringUtil.lowercase(rst, 0, 1);
     }
 
     /**
@@ -87,7 +87,7 @@ public class EntityGenerator {
             // connect & download html
 //            is = HttpClientUtil.doGet(url, null);
             // parse html by Jsoup
-            doc = Jsoup.parse(new URL(url), 6000);
+            doc = Jsoup.parse(new URL(url), 60000);
 //            doc = Jsoup.parse(is, Constants.DEFAULT_ENCODING, "");
             //取所有查询结果
             Elements elements = doc.getElementById("b_results").getElementsByTag("strong");

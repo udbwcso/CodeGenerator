@@ -10,24 +10,33 @@ import java.util.regex.Pattern;
  * Created by Administrator on 2016/8/3.
  */
 public class StringUtil {
-    /**
-     * 首字母大写
-     * @param string
-     * @return
-     */
-    public static String firstLetterUppercase(String string) {
-        String firstLetter = string.substring(0, 1);
-        return firstLetter.toUpperCase() + string.substring(1);
+    public static void main(String[] args) {
+        System.out.println("++" + "123".substring(1, 2) + "--");
+        System.out.println("++" + "123".substring(0, 1) + "--");
     }
 
     /**
-     * 首字母小写
-     * @param string
+     * 字符串指定位置字符大写
+     * @param string 字符串
+     * @param beginIndex 开始位置
+     * @param endIndex 结束位置
      * @return
      */
-    public static String firstLetterLowercase(String string) {
-        String firstLetter = string.substring(0, 1);
-        return firstLetter.toLowerCase() + string.substring(1);
+    public static String uppercase(String string, int beginIndex, int endIndex) {
+        String uppercaseStr = string.substring(beginIndex, endIndex);
+        return string.substring(0, beginIndex) + uppercaseStr.toUpperCase() + string.substring(endIndex);
+    }
+
+    /**
+     * 字符串指定位置字符小写
+     * @param string 字符串
+     * @param beginIndex 开始位置
+     * @param endIndex 结束位置
+     * @return
+     */
+    public static String lowercase(String string, int beginIndex, int endIndex) {
+        String lowercaseStr = string.substring(beginIndex, endIndex);
+        return string.substring(0, beginIndex) + lowercaseStr.toLowerCase() + string.substring(endIndex);
     }
 
     /**
@@ -43,46 +52,57 @@ public class StringUtil {
         return matcher.find();
     }
 
+    /**
+     * 替换空白字符
+     * @param str
+     * @param replacement
+     * @return
+     */
+    public static String replaceWhitespace(String str, String replacement){
+        Pattern pattern = Pattern.compile("\\s+");
+        Matcher matcher = pattern.matcher(str);
+        return matcher.replaceAll(replacement);
+
+    }
+
+    /**
+     *
+     * @param string
+     * @return
+     */
     public static Set<String> split(String string){
-        Set<String> words = new HashSet<String>();
+        string = replaceWhitespace(string, " ");
         char[] chars = string.toCharArray();
-        int start;
+        //在大字母前添加空格
+        StringBuilder str = new StringBuilder();
         int i = 0;
         while (i < chars.length) {
-            if(!Character.isLetter(chars[i])){
-                ++i;
-                continue;
-            }
-            start = i;
-            if(Character.isUpperCase(chars[i])
-                    && Character.isUpperCase(chars[i+1])) {
-                do {
+            if(Character.isUpperCase(chars[i])){
+                str.append(" ");
+                while (i < chars.length && Character.isUpperCase(chars[i])){
+                    str.append(chars[i]);
                     ++i;
-                } while (i < chars.length && Character.isUpperCase(chars[i]));
-            } else if(Character.isUpperCase(chars[i])
-                    && Character.isLowerCase(chars[i+1])){
-                do {
-                    ++i;
-                }while (i < chars.length && Character.isLowerCase(chars[i]));
-            } else if(Character.isLowerCase(chars[i])
-                    && Character.isLowerCase(chars[i+1])){
-                do {
-                    ++i;
-                }while (i < chars.length && Character.isLowerCase(chars[i]));
+                }
             } else {
+                str.append(chars[i]);
                 ++i;
             }
-            words.add(string.substring(start, i).toLowerCase());
+        }
+        string = str.toString().trim().toLowerCase();
+        String[] strings = string.split(" ");
+        Set<String> words = new HashSet<String>();
+        for (String s : strings) {
+            if(!StringUtils.isEmpty(s)){
+                words.add(s);
+            }
         }
         return words;
     }
 
     /**
+     * 过滤所有以"<"开头以">"结尾的标签
      *
-     * 基本功能：过滤所有以"<"开头以">"结尾的标签
-     * <p>
-     *
-     * @param str
+     * @param str 需要过滤的字符串
      * @return String
      */
     private static String htmlFilter(String str) {
@@ -98,14 +118,23 @@ public class StringUtil {
         return sb.toString();
     }
 
+    /**
+     * 清除掉所有特殊字符
+     * @param str
+     * @return
+     */
     private static String charFilter(String str) {
-        // 清除掉所有特殊字符
         String regEx = "[`~!@#$%^&*()+=_\\-|{}':;',\\[\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
         Pattern p = Pattern.compile(regEx);
         Matcher m = p.matcher(str);
         return m.replaceAll(" ").trim();
     }
 
+    /**
+     * 将中文替换为空格
+     * @param str
+     * @return
+     */
     public static String filter(String str){
         String rst = htmlFilter(str);
         //过滤中文
@@ -171,12 +200,12 @@ public class StringUtil {
             for (String s : words) {
                 if(field.startsWith(s)){
                     field = field.replaceFirst(s, "");
-                    rst.append(firstLetterUppercase(s));
+                    rst.append(uppercase(s, 0, 1));
                     break;
                 }
             }
             if(tmp.equals(field)){
-                rst = rst.append(firstLetterUppercase(field));
+                rst = rst.append(uppercase(field, 0, 1));
                 break;
             }
         }
