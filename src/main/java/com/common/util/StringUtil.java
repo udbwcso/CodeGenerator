@@ -11,8 +11,7 @@ import java.util.regex.Pattern;
  */
 public class StringUtil {
     public static void main(String[] args) {
-        System.out.println("++" + "123".substring(1, 2) + "--");
-        System.out.println("++" + "123".substring(0, 1) + "--");
+
     }
 
     /**
