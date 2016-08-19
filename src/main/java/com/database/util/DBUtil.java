@@ -18,7 +18,7 @@ public class DBUtil {
     public static Connection getConnection() {
         Connection connection = null;
         try {
-            Properties properties = PropertiesUtil.load("jdbc.properties", "/properties/database/jdbc.properties");
+            Properties properties = PropertiesUtil.load("/properties/database/jdbc.properties");
             Class.forName(properties.getProperty("driver.class"));
             connection = DriverManager.getConnection(properties.getProperty("url"), properties);
         } catch (IOException e) {

@@ -3,7 +3,6 @@ package com.code.entity;
 import com.common.util.PropertiesUtil;
 import com.common.util.StringUtil;
 import com.database.util.TableUtil;
-import com.template.util.TemplateUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jsoup.Jsoup;
@@ -26,17 +25,23 @@ public class EntityGenerator {
     private static final String SEARCH_URL = "http://cn.bing.com/search?q=";
 
 
-    public static String getEntityCode(String catalog, String schemaPattern,
+    public static Map<String, Object> getTableInfo(String catalog, String schemaPattern,
                                        String tableName, String[] types, String entityName) throws Exception {
-        Properties typeProp = PropertiesUtil.load("type.properties", "/properties/mysql/type.properties");
-        Properties wordProp = PropertiesUtil.load("word.properties", "/properties/word.properties");
+        Properties typeProp = PropertiesUtil.load("/properties/mysql/type.properties");
+        Properties wordProp = PropertiesUtil.load("/properties/word.properties");
         List<Map<String, Object>> tableList = TableUtil.getTables(catalog, schemaPattern, tableName, types);
         Map<String, Object> table = tableList.get(0);
+        List<String> primaryKeyList = TableUtil.getPrimaryKeys(catalog, schemaPattern, tableName);
         log.log(Level.INFO, "database table:" + tableName);
         List<Map<String, Object>> columnList = TableUtil.getColumns(catalog, schemaPattern, tableName, null);
         for (Map<String, Object> column : columnList) {
             column.put("javaType", typeProp.getProperty(String.valueOf((column.get("TYPE_NAME")))));
             String columnName = String.valueOf((column.get("COLUMN_NAME")));
+            for (int i = 0; i < primaryKeyList.size(); i++) {
+                if(columnName.equals(primaryKeyList.get(i))){
+                    column.put("isPrimaryKey", true);
+                }
+            }
             log.log(Level.INFO, "column:" + columnName);
             String field = columnName;
             //字段名没有区分大小写
@@ -54,7 +59,7 @@ public class EntityGenerator {
         }
         table.put("entity", entityName);
         table.put("columnList", columnList);
-        return TemplateUtil.getContent(table, "/template/entity.vm");
+        return table;
     }
 
     /**
@@ -84,11 +89,8 @@ public class EntityGenerator {
         String url = SEARCH_URL + column;
         log.log(Level.INFO, url);
         try {
-            // connect & download html
-//            is = HttpClientUtil.doGet(url, null);
             // parse html by Jsoup
             doc = Jsoup.parse(new URL(url), 60000);
-//            doc = Jsoup.parse(is, Constants.DEFAULT_ENCODING, "");
             //取所有查询结果
             Elements elements = doc.getElementById("b_results").getElementsByTag("strong");
             String result = elements.html();

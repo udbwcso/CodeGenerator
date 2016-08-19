@@ -1,12 +1,15 @@
 package com.main;
 
+import com.code.entity.EntityGenerator;
 import com.common.Constants;
 import com.common.util.PropertiesUtil;
-import com.code.entity.EntityGenerator;
+import com.template.util.TemplateUtil;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
@@ -17,12 +20,13 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        Properties tableProp = PropertiesUtil.load("table.properties", "/properties/database/table.properties");
+        Properties tableProp = PropertiesUtil.load("/properties/database/table.properties");
         Enumeration enumeration = tableProp.keys();
         while (enumeration.hasMoreElements()) {
             String key = String.valueOf(enumeration.nextElement());
             String entityName = tableProp.getProperty(key);
-            String code = EntityGenerator.getEntityCode(null, null, key, null, entityName);
+            Map<String, Object> tableInfo = EntityGenerator.getTableInfo(null, null, key, null, entityName);
+            String code = TemplateUtil.getContent(tableInfo, "/template/entity.vm");
             File codeFile = new File(entityName + ".java");
             log.info(entityName + ".java" + ":" + codeFile.getAbsolutePath());
             FileUtils.writeStringToFile(codeFile, code, Constants.DEFAULT_ENCODING);

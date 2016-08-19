@@ -70,4 +70,17 @@ public class TableUtil {
         DBUtil.close(connection, null, rs);
         return list;
     }
+
+    public static List<String> getPrimaryKeys(String catalog, String schemaPattern,
+                                                      String tableNamePattern) throws Exception {
+        Connection connection = DBUtil.getConnection();
+        DatabaseMetaData databaseMetaData = connection.getMetaData();
+        ResultSet rs = databaseMetaData.getPrimaryKeys(catalog, schemaPattern, tableNamePattern);
+        List<String> list = new ArrayList<String>();
+        while (rs.next()) {
+            list.add(rs.getString("COLUMN_NAME"));
+        }
+        DBUtil.close(connection, null, rs);
+        return list;
+    }
 }
