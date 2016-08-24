@@ -210,4 +210,22 @@ public class StringUtil {
         }
         return rst.toString();
     }
+
+    /**
+     * 根据str的组成单词words,将str按驼峰命名规则命名
+     * @param str
+     * @return
+     */
+    public static String camelCased(String str) {
+        String[] words = str.split("_");
+        if(words.length <= 1){
+            return str;
+        }
+        StringBuffer rst = new StringBuffer();
+        rst.append(words[0]);
+        for (int i = 1; i < words.length; i++) {
+            rst.append(uppercase(words[i].toLowerCase(), 0, 1));
+        }
+        return rst.toString();
+    }
 }

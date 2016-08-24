@@ -1,6 +1,7 @@
 package com.database.util;
 
 
+import com.code.Configuration;
 import com.common.util.PropertiesUtil;
 
 import java.io.IOException;
@@ -18,7 +19,7 @@ public class DBUtil {
     public static Connection getConnection() {
         Connection connection = null;
         try {
-            Properties properties = PropertiesUtil.load("/properties/database/jdbc.properties");
+            Properties properties = PropertiesUtil.load(Configuration.get("jdbc"));
             Class.forName(properties.getProperty("driver.class"));
             connection = DriverManager.getConnection(properties.getProperty("url"), properties);
         } catch (IOException e) {

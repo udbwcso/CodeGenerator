@@ -1,5 +1,6 @@
 package com.main;
 
+import com.code.Configuration;
 import com.code.entity.EntityGenerator;
 import com.common.Constants;
 import com.common.util.PropertiesUtil;
@@ -20,13 +21,13 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        Properties tableProp = PropertiesUtil.load("/properties/database/table.properties");
+        Properties tableProp = PropertiesUtil.load(Configuration.get("table"));
         Enumeration enumeration = tableProp.keys();
         while (enumeration.hasMoreElements()) {
             String key = String.valueOf(enumeration.nextElement());
             String entityName = tableProp.getProperty(key);
             Map<String, Object> tableInfo = EntityGenerator.getTableInfo(null, null, key, null, entityName);
-            String code = TemplateUtil.getContent(tableInfo, "/template/entity.vm");
+            String code = TemplateUtil.getContent(tableInfo, Configuration.get("entity"));
             File codeFile = new File(entityName + ".java");
             log.info(entityName + ".java" + ":" + codeFile.getAbsolutePath());
             FileUtils.writeStringToFile(codeFile, code, Constants.DEFAULT_ENCODING);
