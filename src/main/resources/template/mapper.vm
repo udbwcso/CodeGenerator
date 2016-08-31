@@ -1,0 +1,98 @@
+<mapper>
+    <resultMap type="" id="">
+    #foreach( $column in $columnList )
+        <result column="${column.COLUMN_NAME}" property="${column.field}" jdbcType="${column.TYPE_NAME}" />
+    #end
+    </resultMap>
+
+    <sql id="${entity}BasicColumns">
+        #foreach( $column in $columnList )
+            ${column.COLUMN_NAME} ${column.field}#if(${velocityCount} != ${columnList.size()}),#end
+        #end
+    </sql>
+
+    <inset>
+        #set($columnNameString = "")
+        #set($columnValueString = "")
+        #foreach( $column in $columnList )
+            #set($comma = "")
+            #if(${velocityCount} != ${columnList.size()})
+                #set($comma = ",")
+            #end
+            #set($columnNameString = "${columnNameString}${column.COLUMN_NAME}${comma}")
+            #set($columnValueString = "${columnValueString}#{${column.field},jdbcType=${column.TYPE_NAME}}${comma}")
+        #end
+        insert into $TABLE_NAME(${columnNameString})
+        values($columnValueString)
+    </inset>
+
+    <update id="">
+        update $TABLE_NAME
+        <set>
+        #foreach( $column in $columnList )
+            #if(!${column.isPrimaryKey})
+                <if test="${column.field} != null">
+                    ${column.COLUMN_NAME}=#{${column.field},jdbcType=${column.TYPE_NAME}}#if(${velocityCount} != ${columnList.size()}),#end
+                </if>
+            #end
+        #end
+        </set>
+        where
+        #foreach( $column in $columnList )
+            #if(${column.isPrimaryKey})
+                ${column.COLUMN_NAME}=#{${column.field},jdbcType=${column.TYPE_NAME}}
+            #end
+        #end
+    </update>
+
+    <select>
+        SELECT
+        <include refid="${entity}BasicColumns"/>
+        FROM $TABLE_NAME
+        WHERE
+        #foreach( $column in $columnList )
+            #if(${column.isPrimaryKey})
+                ${column.COLUMN_NAME}
+            #end
+        #end
+        in
+        <foreach item="item" index="index" collection="list"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select>
+        SELECT
+        <include refid="${entity}BasicColumns"/>
+        FROM $TABLE_NAME WHERE
+        #foreach( $column in $columnList )
+            #if(${column.isPrimaryKey})
+                ${column.COLUMN_NAME}=#{${column.field},jdbcType=${column.TYPE_NAME}}
+            #end
+        #end
+    </select>
+
+    <delete>
+        DELETE FROM $TABLE_NAME WHERE
+        #foreach( $column in $columnList )
+            #if(${column.isPrimaryKey})
+                ${column.COLUMN_NAME}=#{${column.field},jdbcType=${column.TYPE_NAME}}
+            #end
+        #end
+    </delete>
+
+    <delete>
+        DELETE FROM $TABLE_NAME WHERE
+        #foreach( $column in $columnList )
+            #if(${column.isPrimaryKey})
+                ${column.COLUMN_NAME}
+            #end
+        #end
+        in
+        <foreach item="item" index="index" collection="list"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </delete>
+</mapper>

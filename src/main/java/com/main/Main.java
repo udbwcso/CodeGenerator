@@ -27,10 +27,14 @@ public class Main {
             String key = String.valueOf(enumeration.nextElement());
             String entityName = tableProp.getProperty(key);
             Map<String, Object> tableInfo = EntityGenerator.getTableInfo(null, null, key, null, entityName);
+            //java bean
             String code = TemplateUtil.getContent(tableInfo, Configuration.get("entity"));
             File codeFile = new File(entityName + ".java");
             log.info(entityName + ".java" + ":" + codeFile.getAbsolutePath());
             FileUtils.writeStringToFile(codeFile, code, Constants.DEFAULT_ENCODING);
+            //mybatis mapper
+            String mapper = TemplateUtil.getContent(tableInfo, "/template/mapper.vm");
+            FileUtils.writeStringToFile(new File(entityName + "Mapper.xml"), mapper, Constants.DEFAULT_ENCODING);
         }
     }
 }
