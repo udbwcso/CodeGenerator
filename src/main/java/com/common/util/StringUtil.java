@@ -2,7 +2,10 @@ package com.common.util;
 
 import org.apache.commons.lang.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -11,7 +14,10 @@ import java.util.regex.Pattern;
  */
 public class StringUtil {
     public static void main(String[] args) {
-
+        System.out.println(true ^ false);
+        System.out.println(false ^ true);
+        System.out.println(false ^ false);
+        System.out.println(true ^ true);
     }
 
     /**
@@ -65,37 +71,26 @@ public class StringUtil {
     }
 
     /**
-     *
-     * @param string
+     * 根据字母大小写分隔字符串
+     * 只分隔小写字母后面是大写字母的情况
+     * @param string 由字母和数字组成的字符串
      * @return
      */
-    public static Set<String> split(String string, String separator){
-        string = replaceWhitespace(string, separator);
+    public static String[] splitByCase(String string){
         char[] chars = string.toCharArray();
         //在大字母前添加分隔符
         StringBuilder str = new StringBuilder();
-        int i = 0;
-        while (i < chars.length) {
-            if(Character.isUpperCase(chars[i])){
+        str.append(chars[0]);
+        String separator = "_";
+        for (int i = 1; i < chars.length; i++) {
+            if (Character.isLowerCase(chars[i-1]) && Character.isUpperCase(chars[i])) {
                 str.append(separator);
-                while (i < chars.length && Character.isUpperCase(chars[i])){
-                    str.append(chars[i]);
-                    ++i;
-                }
-            } else {
-                str.append(chars[i]);
-                ++i;
             }
+            str.append(chars[i]);
         }
         string = str.toString().trim().toLowerCase();
         String[] strings = string.split(separator);
-        Set<String> words = new HashSet<String>();
-        for (String s : strings) {
-            if(!StringUtils.isEmpty(s)){
-                words.add(s);
-            }
-        }
-        return words;
+        return strings;
     }
 
     /**
@@ -116,16 +111,25 @@ public class StringUtil {
         return sb.toString();
     }
 
+
     /**
-     * 替换所有特殊字符
+     * 替换不是数字或字母的字符
      * @param str
+     * @param replacement
      * @return
      */
-    private static String replaceSpecialCharacters(String str, String replacement) {
-        String regEx = "[`~!@#$%^&*()+=_\\-|{}':;',\\[\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
-        Pattern p = Pattern.compile(regEx);
-        Matcher m = p.matcher(str);
-        return m.replaceAll(replacement).trim();
+    public static String replaceCharacters(String str, String replacement){
+        char[] chars = str.toCharArray();
+        StringBuffer rst = new StringBuffer();
+        for (char c : chars) {
+            if(Character.isLetterOrDigit(c)) {
+                rst.append(c);
+            } else {
+                rst.append(replacement);
+            }
+
+        }
+        return rst.toString();
     }
 
     /**
@@ -133,13 +137,13 @@ public class StringUtil {
      * @param str
      * @return
      */
-    public static String replace(String str, String replacement){
+    public static String replaceSpecialChar(String str, String replacement){
         //替换所有以"<"开头以">"结尾的标签
         String rst = replaceTag(str, replacement);
         //替换中文
         rst = rst.replaceAll("[\\u4E00-\\u9FA5]", replacement);
-        //替换特殊字符
-        rst = replaceSpecialCharacters(rst, replacement);
+        //替换不是数字或字母的字符
+        rst = replaceCharacters(rst, replacement);
         //替换空白字符
         rst = replaceWhitespace(rst, replacement);
         return rst;
@@ -152,7 +156,9 @@ public class StringUtil {
      * @param map key:单词,value:单词出现的次数
      * @return
      */
-    public static Set<String> filter(Map<String, Integer> map){
+    public static Set<String> filter(String column, LinkedHashMap<String, Integer> map){
+
+
         String[] strings = map.keySet().toArray(new String[0]);
         List<String> wordList = new ArrayList<String>();
         for (int i = 0; i < strings.length; i++) {
@@ -193,7 +199,7 @@ public class StringUtil {
      * @param str
      * @return
      */
-    public static String camelCased(Set<String> words, String str){
+    public static String camelCased(List<String> words, String str){
         String field = str.toLowerCase();
         StringBuffer rst = new StringBuffer();
         while (!StringUtils.isEmpty(field)){
@@ -210,7 +216,7 @@ public class StringUtil {
                 break;
             }
         }
-        return rst.toString();
+        return lowercase(rst.toString(), 0, 1);
     }
 
     /**
