@@ -69,15 +69,15 @@ public class StringUtil {
      * @param string
      * @return
      */
-    public static Set<String> split(String string){
-        string = replaceWhitespace(string, " ");
+    public static Set<String> split(String string, String separator){
+        string = replaceWhitespace(string, separator);
         char[] chars = string.toCharArray();
-        //在大字母前添加空格
+        //在大字母前添加分隔符
         StringBuilder str = new StringBuilder();
         int i = 0;
         while (i < chars.length) {
             if(Character.isUpperCase(chars[i])){
-                str.append(" ");
+                str.append(separator);
                 while (i < chars.length && Character.isUpperCase(chars[i])){
                     str.append(chars[i]);
                     ++i;
@@ -88,7 +88,7 @@ public class StringUtil {
             }
         }
         string = str.toString().trim().toLowerCase();
-        String[] strings = string.split(" ");
+        String[] strings = string.split(separator);
         Set<String> words = new HashSet<String>();
         for (String s : strings) {
             if(!StringUtils.isEmpty(s)){
@@ -99,18 +99,17 @@ public class StringUtil {
     }
 
     /**
-     * 过滤所有以"<"开头以">"结尾的标签
-     *
+     * 替换所有以"<"开头以">"结尾的标签
      * @param str 需要过滤的字符串
      * @return String
      */
-    private static String htmlFilter(String str) {
+    private static String replaceTag(String str, String replacement) {
         Pattern pattern = Pattern.compile("<([^>]*)>");
         Matcher matcher = pattern.matcher(str);
         StringBuffer sb = new StringBuffer();
         boolean result1 = matcher.find();
         while (result1) {
-            matcher.appendReplacement(sb, "");
+            matcher.appendReplacement(sb, replacement);
             result1 = matcher.find();
         }
         matcher.appendTail(sb);
@@ -118,28 +117,31 @@ public class StringUtil {
     }
 
     /**
-     * 清除掉所有特殊字符
+     * 替换所有特殊字符
      * @param str
      * @return
      */
-    private static String charFilter(String str) {
+    private static String replaceSpecialCharacters(String str, String replacement) {
         String regEx = "[`~!@#$%^&*()+=_\\-|{}':;',\\[\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
         Pattern p = Pattern.compile(regEx);
         Matcher m = p.matcher(str);
-        return m.replaceAll(" ").trim();
+        return m.replaceAll(replacement).trim();
     }
 
     /**
-     * 将中文替换为空格
+     * 替换html,中文,特殊字符
      * @param str
      * @return
      */
-    public static String filter(String str){
-        String rst = htmlFilter(str);
-        //过滤中文
-        rst = rst.replaceAll("[\\u4E00-\\u9FA5]", " ");
-        //过滤特殊字符
-        rst = charFilter(rst);
+    public static String replace(String str, String replacement){
+        //替换所有以"<"开头以">"结尾的标签
+        String rst = replaceTag(str, replacement);
+        //替换中文
+        rst = rst.replaceAll("[\\u4E00-\\u9FA5]", replacement);
+        //替换特殊字符
+        rst = replaceSpecialCharacters(rst, replacement);
+        //替换空白字符
+        rst = replaceWhitespace(rst, replacement);
         return rst;
     }
 
@@ -212,12 +214,14 @@ public class StringUtil {
     }
 
     /**
-     * 根据str的组成单词words,将str按驼峰命名规则命名
+     * 将str按驼峰命名规则命名
      * @param str
+     * @param separator 分隔符
      * @return
      */
-    public static String camelCased(String str) {
-        String[] words = str.split("_");
+    public static String camelCased(String str, String separator) {
+        str = str.toLowerCase();
+        String[] words = str.split(separator);
         if(words.length <= 1){
             return str;
         }

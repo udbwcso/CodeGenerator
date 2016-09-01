@@ -71,6 +71,14 @@ public class TableUtil {
         return list;
     }
 
+    /**
+     * 获取数据库表的主键
+     * @param catalog ""表示没有catalog,null表示不将catalog作为查询条件
+     * @param schemaPattern ""表示没有schema,null表示不将schema作为查询条件
+     * @param tableNamePattern 表名
+     * @return
+     * @throws Exception
+     */
     public static List<String> getPrimaryKeys(String catalog, String schemaPattern,
                                                       String tableNamePattern) throws Exception {
         Connection connection = DBUtil.getConnection();

@@ -35,7 +35,6 @@ public class EntityGenerator {
         List<String> primaryKeyList = TableUtil.getPrimaryKeys(catalog, schemaPattern, tableName);
         log.log(Level.INFO, "database table:" + tableName);
         List<Map<String, Object>> columnList = TableUtil.getColumns(catalog, schemaPattern, tableName, null);
-        boolean camelCased = false;
         for (Map<String, Object> column : columnList) {
             String typeName = String.valueOf(column.get("TYPE_NAME"));
             column.put("javaType", typeProp.getProperty(typeName.replaceAll(" ", "_")));
@@ -48,12 +47,13 @@ public class EntityGenerator {
             log.log(Level.INFO, "column:" + columnName);
             //读取配置文件
             String field = wordProp.getProperty(columnName);
+            if(StringUtils.isEmpty(field)){
+                field = wordProp.getProperty(columnName.toLowerCase());
+            }
             if (StringUtils.isEmpty(field)) {
-                if (columnName.contains("_") || camelCased) {
-                    field = StringUtil.camelCased(columnName);
-                    camelCased = true;
-                } else if (!(StringUtil.isExist("\\p{Lower}", columnName)
-                        && StringUtil.isExist("\\p{Upper}", columnName))) {//字段名没有区分大小写
+                if (Configuration.get("column_separator") != null) {
+                    field = StringUtil.camelCased(columnName, Configuration.get("column_separator"));
+                } else {
                     //在网上查询
                     field = getField(columnName);
                 }
@@ -103,8 +103,6 @@ public class EntityGenerator {
             log.log(Level.SEVERE, "search column error", e);
         } finally {
             IOUtils.closeQuietly(is);
-            is = null;
-            doc = null;
         }
         return new String[0];
     }
@@ -120,11 +118,11 @@ public class EntityGenerator {
         Set<String> wordSet = null;
         Map<String, Integer> wordMap = new HashMap<String, Integer>();
         for (String arg : args) {
-            arg = StringUtil.filter(arg);
+            arg = StringUtil.replace(arg, " ");
             if(StringUtils.isEmpty(arg)){
                 continue;
             }
-            wordSet = StringUtil.split(arg);
+            wordSet = StringUtil.split(arg, " ");
             //统计单词出现的频率
             for (String s : wordSet) {
                 Integer cnt = wordMap.get(s);
