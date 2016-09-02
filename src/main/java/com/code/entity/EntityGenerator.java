@@ -28,7 +28,7 @@ public class EntityGenerator {
 
 
     public static Map<String, Object> getTableInfo(String catalog, String schemaPattern,
-                                       String tableName, String[] types, String entityName) throws Exception {
+                                                   String tableName, String[] types, String entityName) throws Exception {
         Properties typeProp = PropertiesUtil.load(Configuration.get("type"));
 
         List<Map<String, Object>> tableList = TableUtil.getTables(catalog, schemaPattern, tableName, types);
@@ -43,7 +43,7 @@ public class EntityGenerator {
             column.put("javaType", typeProp.getProperty(typeName.replaceAll(" ", "_")));
             String columnName = String.valueOf((column.get("COLUMN_NAME")));
             for (int i = 0; i < primaryKeyList.size(); i++) {
-                if(columnName.equals(primaryKeyList.get(i))){
+                if (columnName.equals(primaryKeyList.get(i))) {
                     column.put("isPrimaryKey", true);
                 }
             }
@@ -51,15 +51,9 @@ public class EntityGenerator {
             fieldWordList.addAll(getFieldWord(columnName));
         }
 
-
         LinkedHashMap<String, Integer> wordMap = wordStatistics(fieldWordList);
         wordMap = sortMapByValue(wordMap);
-
-//        Iterator<String> it1 = wordMap.keySet().iterator();
-//        while (it1.hasNext()){
-//            String key = it1.next();
-//            System.out.println(key + "-------" + wordMap.get(key));
-//        }
+        wordFilter(wordMap);
 
         for (Map<String, Object> column : columnList) {
             String columnName = String.valueOf((column.get("COLUMN_NAME")));
@@ -72,23 +66,92 @@ public class EntityGenerator {
         return table;
     }
 
+    /**
+     * 将map的所有key存入List中
+     * @param map
+     * @return
+     */
+    public static List<String> getKeyList(LinkedHashMap<String, Integer> map) {
+        List<String> keyList = new ArrayList<String>();
+        Iterator<String> it = map.keySet().iterator();
+        while (it.hasNext()) {
+            String key = it.next();
+            keyList.add(key);
+        }
+        return keyList;
+    }
+
+    /**
+     * 根据单词频率过滤单词,如Map的key中有id,order,orderid
+     * 如果id和order出现的次数之和比orderid大则删除orderid.
+     *
+     * @param wordMap
+     */
+    public static void wordFilter(LinkedHashMap<String, Integer> wordMap) {
+        List<String> keyList = getKeyList(wordMap);
+        for (String key : keyList) {
+            if (wordMap.get(key) == null) {
+                continue;
+            }
+            List<String> tmpKeyList = getKeyList(wordMap);
+            tmpKeyList.remove(key);
+            List<String> subWordList = new ArrayList<String>();
+            String remain = subWord(key, tmpKeyList, subWordList);
+            if (!StringUtils.isEmpty(remain) || subWordList.size() < 2) {
+                continue;
+            }
+            Integer cnt = 0;
+            for (String subWord : subWordList) {
+                cnt = cnt + wordMap.get(subWord);
+            }
+            if (cnt >= wordMap.get(key)) {
+                wordMap.remove(key);
+            }
+        }
+    }
+
+    /**
+     * 在wordList中查找string的组成单词
+     * 并将string的组成单词存入subWordList
+     *
+     * @param string
+     * @param wordList
+     * @param subWordList
+     * @return
+     */
+    public static String subWord(String string, List<String> wordList, List<String> subWordList) {
+        if (StringUtils.isEmpty(string)) {
+            return string;
+        }
+        for (int i = 0; i < wordList.size(); i++) {
+            if (string.startsWith(wordList.get(i))) {
+                subWordList.add(wordList.get(i));
+                return subWord(string.replaceFirst(wordList.get(i), ""), wordList, subWordList);
+            }
+        }
+        return string;
+    }
+
+    /**
+     * 根据column的组成单词words,将column按驼峰命名规则命名
+     *
+     * @param column
+     * @param wordMap
+     * @return
+     * @throws IOException
+     */
     public static String getField(String column, LinkedHashMap<String, Integer> wordMap) throws IOException {
         //读取配置文件
         Properties wordProp = PropertiesUtil.load(Configuration.get("word"));
         String field = wordProp.getProperty(column);
-        if(StringUtils.isEmpty(field)){
+        if (StringUtils.isEmpty(field)) {
             field = wordProp.getProperty(column.toLowerCase());
         }
         if (StringUtils.isEmpty(field)) {
             if (Configuration.get("column_separator") != null) {
                 field = StringUtil.camelCased(column, Configuration.get("column_separator"));
             } else {
-                List<String> columnWordList = new ArrayList<String>();
-                Iterator<String> it = wordMap.keySet().iterator();
-                while (it.hasNext()){
-                    String key = it.next();
-                    columnWordList.add(key);
-                }
+                List<String> columnWordList = getKeyList(wordMap);
                 field = StringUtil.camelCased(columnWordList, column);
             }
         }
@@ -97,6 +160,7 @@ public class EntityGenerator {
 
     /**
      * map排序
+     *
      * @param oriMap
      * @return
      */
@@ -107,7 +171,7 @@ public class EntityGenerator {
                 new Comparator<Map.Entry<String, Integer>>() {
                     public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
                         Integer rst = o2.getValue() - o1.getValue();
-                        if(rst == 0){
+                        if (rst == 0) {
                             return o2.getKey().length() - o1.getKey().length();
                         }
                         return rst;
@@ -124,10 +188,11 @@ public class EntityGenerator {
 
     /**
      * 获取字段名的组成单词
+     *
      * @param column 字段名
      * @return
      */
-    public static List<String> getFieldWord(String column){
+    public static List<String> getFieldWord(String column) {
         List<String> searchRstList = new ArrayList<String>();
         for (int i = 1; i < 4; i++) {
             String[] strings = search(column, i);
@@ -136,12 +201,12 @@ public class EntityGenerator {
         List<String> wordList = new ArrayList<String>();
         for (String arg : searchRstList) {
             arg = StringUtil.replaceSpecialChar(arg, " ");
-            if(StringUtils.isEmpty(arg)){
+            if (StringUtils.isEmpty(arg)) {
                 continue;
             }
             String[] words = arg.split(" ");
             for (int i = 0; i < words.length; i++) {
-                if(StringUtils.isEmpty(words[i])){
+                if (StringUtils.isEmpty(words[i])) {
                     continue;
                 }
                 wordList.addAll(Arrays.asList(StringUtil.splitByCase(words[i])));
@@ -154,8 +219,9 @@ public class EntityGenerator {
      * 根据字段名称获取成员变量名称,
      * 在http://cn.bing.com查询字段名称,
      * 用Jsoup解析查询结果并取值.
+     *
      * @param column 字段名称
-     * @param page 页数
+     * @param page   页数
      * @return
      */
     public static String[] search(String column, int page) {
@@ -163,7 +229,7 @@ public class EntityGenerator {
         Document doc = null;
         // create URL string
         String url = SEARCH_URL + column;
-        if(page > 1){
+        if (page > 1) {
             url = url + "&first=" + (page + 1) + "1";
         }
         log.log(Level.INFO, url);
@@ -185,16 +251,17 @@ public class EntityGenerator {
 
     /**
      * 单词频率统计
+     *
      * @return
      */
     private static LinkedHashMap<String, Integer> wordStatistics(List<String> wordList) {
         LinkedHashMap<String, Integer> wordMap = new LinkedHashMap<String, Integer>();
         for (String word : wordList) {
-            if(StringUtils.isEmpty(word)){
+            if (StringUtils.isEmpty(word)) {
                 continue;
             }
             Integer cnt = wordMap.get(word);
-            if(cnt == null){
+            if (cnt == null) {
                 wordMap.put(word, 1);
             } else {
                 wordMap.put(word, cnt + 1);

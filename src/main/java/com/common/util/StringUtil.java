@@ -2,10 +2,7 @@ package com.common.util;
 
 import org.apache.commons.lang.StringUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,12 +10,6 @@ import java.util.regex.Pattern;
  * Created by Administrator on 2016/8/3.
  */
 public class StringUtil {
-    public static void main(String[] args) {
-        System.out.println(true ^ false);
-        System.out.println(false ^ true);
-        System.out.println(false ^ false);
-        System.out.println(true ^ true);
-    }
 
     /**
      * 字符串指定位置字符大写
@@ -147,50 +138,6 @@ public class StringUtil {
         //替换空白字符
         rst = replaceWhitespace(rst, replacement);
         return rst;
-    }
-
-    /**
-     * 根据单词频率过滤单词,如Map的key中有id,order,orderid
-     * 如果id和order出现的次数之和比orderid大则删除orderid,
-     * 反之则删除id和order
-     * @param map key:单词,value:单词出现的次数
-     * @return
-     */
-    public static Set<String> filter(String column, LinkedHashMap<String, Integer> map){
-
-
-        String[] strings = map.keySet().toArray(new String[0]);
-        List<String> wordList = new ArrayList<String>();
-        for (int i = 0; i < strings.length; i++) {
-            if(map.get(strings[i]) == null){//已经在map中删除这个单词
-                continue;
-            }
-            String word = strings[i];
-            Integer cnt = 0;
-            for (int j = 0; j < strings.length; j++) {
-                if(i == j || map.get(strings[j]) == null){
-                    continue;
-                }
-                if(word.contains(strings[j])){
-                    word = word.replaceAll(strings[j], "");
-                    cnt = cnt + map.get(strings[j]);
-                    wordList.add(strings[j]);
-                }
-            }
-            if(!StringUtils.isEmpty(word)){
-                wordList.clear();
-                continue;
-            }
-            if(cnt > map.get(strings[i])){
-                map.remove(strings[i]);
-            } else {
-                for (int j = 0; j < wordList.size(); j++) {
-                    map.remove(wordList.get(j));
-                }
-            }
-            wordList.clear();
-        }
-        return map.keySet();
     }
 
     /**
