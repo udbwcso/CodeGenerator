@@ -1,9 +1,8 @@
 package com.common.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.*;
 import java.util.Properties;
 
 
@@ -40,5 +39,23 @@ public class PropertiesUtil {
         Properties properties = load(is);
         is.close();
         return properties;
+    }
+
+    public static void store(Properties properties, String path, boolean append) throws IOException {
+        OutputStream fos = new FileOutputStream(path, append);
+        properties.store(fos, "");
+        fos.close();
+    }
+
+    public static String getPropertyIgnoreCase(Properties properties, String key){
+        String value = properties.getProperty(key);
+        if(StringUtils.isNotEmpty(value)){
+            return value;
+        }
+        value = properties.getProperty(key.toLowerCase());
+        if(StringUtils.isNotEmpty(value)){
+            return value;
+        }
+        return properties.getProperty(key.toUpperCase());
     }
 }

@@ -3,16 +3,9 @@ package com.code.entity;
 import com.code.Configuration;
 import com.common.util.PropertiesUtil;
 import com.common.util.StringUtil;
+import com.common.util.WordUtil;
 import com.database.util.TableUtil;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,9 +16,6 @@ import java.util.logging.Logger;
 public class EntityGenerator {
 
     private static Logger log = Logger.getLogger(EntityGenerator.class.getName());
-
-    private static final String SEARCH_URL = "http://cn.bing.com/search?q=";
-
 
     public static Map<String, Object> getTableInfo(String catalog, String schemaPattern,
                                                    String tableName, String[] types, String entityName) throws Exception {
@@ -48,114 +38,22 @@ public class EntityGenerator {
                 }
             }
             log.log(Level.INFO, "column:" + columnName);
-            fieldWordList.addAll(getFieldWord(columnName));
+            fieldWordList.addAll(WordUtil.splitByWord(columnName));
         }
 
-        LinkedHashMap<String, Integer> wordMap = wordStatistics(fieldWordList);
+        LinkedHashMap<String, Integer> wordMap = WordUtil.wordStatistics(fieldWordList);
         wordMap = sortMapByValue(wordMap);
-        wordFilter(wordMap);
+        WordUtil.deleteRepeat(wordMap);
 
         for (Map<String, Object> column : columnList) {
             String columnName = String.valueOf((column.get("COLUMN_NAME")));
-            String field = getField(columnName, wordMap);
+            String field = WordUtil.camelCased(columnName, wordMap);
             column.put("field", field);
             column.put("firstUpperCaseField", StringUtil.uppercase(field, 0, 1));
         }
         table.put("entity", entityName);
         table.put("columnList", columnList);
         return table;
-    }
-
-    /**
-     * 将map的所有key存入List中
-     * @param map
-     * @return
-     */
-    public static List<String> getKeyList(LinkedHashMap<String, Integer> map) {
-        List<String> keyList = new ArrayList<String>();
-        Iterator<String> it = map.keySet().iterator();
-        while (it.hasNext()) {
-            String key = it.next();
-            keyList.add(key);
-        }
-        return keyList;
-    }
-
-    /**
-     * 根据单词频率过滤单词,如Map的key中有id,order,orderid
-     * 如果id和order出现的次数之和比orderid大则删除orderid.
-     *
-     * @param wordMap
-     */
-    public static void wordFilter(LinkedHashMap<String, Integer> wordMap) {
-        List<String> keyList = getKeyList(wordMap);
-        for (String key : keyList) {
-            if (wordMap.get(key) == null) {
-                continue;
-            }
-            List<String> tmpKeyList = getKeyList(wordMap);
-            tmpKeyList.remove(key);
-            List<String> subWordList = new ArrayList<String>();
-            String remain = subWord(key, tmpKeyList, subWordList);
-            if (!StringUtils.isEmpty(remain) || subWordList.size() < 2) {
-                continue;
-            }
-            Integer cnt = 0;
-            for (String subWord : subWordList) {
-                cnt = cnt + wordMap.get(subWord);
-            }
-            if (cnt >= wordMap.get(key)) {
-                wordMap.remove(key);
-            }
-        }
-    }
-
-    /**
-     * 在wordList中查找string的组成单词
-     * 并将string的组成单词存入subWordList
-     *
-     * @param string
-     * @param wordList
-     * @param subWordList
-     * @return
-     */
-    public static String subWord(String string, List<String> wordList, List<String> subWordList) {
-        if (StringUtils.isEmpty(string)) {
-            return string;
-        }
-        for (int i = 0; i < wordList.size(); i++) {
-            if (string.startsWith(wordList.get(i))) {
-                subWordList.add(wordList.get(i));
-                return subWord(string.replaceFirst(wordList.get(i), ""), wordList, subWordList);
-            }
-        }
-        return string;
-    }
-
-    /**
-     * 根据column的组成单词words,将column按驼峰命名规则命名
-     *
-     * @param column
-     * @param wordMap
-     * @return
-     * @throws IOException
-     */
-    public static String getField(String column, LinkedHashMap<String, Integer> wordMap) throws IOException {
-        //读取配置文件
-        Properties wordProp = PropertiesUtil.load(Configuration.get("word"));
-        String field = wordProp.getProperty(column);
-        if (StringUtils.isEmpty(field)) {
-            field = wordProp.getProperty(column.toLowerCase());
-        }
-        if (StringUtils.isEmpty(field)) {
-            if (Configuration.get("column_separator") != null) {
-                field = StringUtil.camelCased(column, Configuration.get("column_separator"));
-            } else {
-                List<String> columnWordList = getKeyList(wordMap);
-                field = StringUtil.camelCased(columnWordList, column);
-            }
-        }
-        return field;
     }
 
     /**
@@ -184,89 +82,5 @@ public class EntityGenerator {
             sortedMap.put(tmpEntry.getKey(), tmpEntry.getValue());
         }
         return sortedMap;
-    }
-
-    /**
-     * 获取字段名的组成单词
-     *
-     * @param column 字段名
-     * @return
-     */
-    public static List<String> getFieldWord(String column) {
-        List<String> searchRstList = new ArrayList<String>();
-        for (int i = 1; i < 4; i++) {
-            String[] strings = search(column, i);
-            searchRstList.addAll(Arrays.asList(strings));
-        }
-        List<String> wordList = new ArrayList<String>();
-        for (String arg : searchRstList) {
-            arg = StringUtil.replaceSpecialChar(arg, " ");
-            if (StringUtils.isEmpty(arg)) {
-                continue;
-            }
-            String[] words = arg.split(" ");
-            for (int i = 0; i < words.length; i++) {
-                if (StringUtils.isEmpty(words[i])) {
-                    continue;
-                }
-                wordList.addAll(Arrays.asList(StringUtil.splitByCase(words[i])));
-            }
-        }
-        return wordList;
-    }
-
-    /**
-     * 根据字段名称获取成员变量名称,
-     * 在http://cn.bing.com查询字段名称,
-     * 用Jsoup解析查询结果并取值.
-     *
-     * @param column 字段名称
-     * @param page   页数
-     * @return
-     */
-    public static String[] search(String column, int page) {
-        InputStream is = null;
-        Document doc = null;
-        // create URL string
-        String url = SEARCH_URL + column;
-        if (page > 1) {
-            url = url + "&first=" + (page + 1) + "1";
-        }
-        log.log(Level.INFO, url);
-        try {
-            // parse html by Jsoup
-            doc = Jsoup.parse(new URL(url), 60000);
-            //取所有查询结果
-            Elements elements = doc.getElementById("b_results").getElementsByTag("strong");
-            String result = elements.html();
-            return result.split("\\n");
-        } catch (Exception e) {
-            log.log(Level.SEVERE, "search column error", e);
-        } finally {
-            IOUtils.closeQuietly(is);
-        }
-        return new String[0];
-    }
-
-
-    /**
-     * 单词频率统计
-     *
-     * @return
-     */
-    private static LinkedHashMap<String, Integer> wordStatistics(List<String> wordList) {
-        LinkedHashMap<String, Integer> wordMap = new LinkedHashMap<String, Integer>();
-        for (String word : wordList) {
-            if (StringUtils.isEmpty(word)) {
-                continue;
-            }
-            Integer cnt = wordMap.get(word);
-            if (cnt == null) {
-                wordMap.put(word, 1);
-            } else {
-                wordMap.put(word, cnt + 1);
-            }
-        }
-        return wordMap;
     }
 }

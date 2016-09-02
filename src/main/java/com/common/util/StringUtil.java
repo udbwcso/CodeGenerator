@@ -1,6 +1,6 @@
 package com.common.util;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.regex.Matcher;
@@ -149,7 +149,7 @@ public class StringUtil {
     public static String camelCased(List<String> words, String str){
         String field = str.toLowerCase();
         StringBuffer rst = new StringBuffer();
-        while (!StringUtils.isEmpty(field)){
+        while (StringUtils.isNotEmpty(field)){
             String tmp = field;
             for (String s : words) {
                 if(field.startsWith(s)){
