@@ -18,7 +18,7 @@ public class EntityGenerator {
     private static Logger log = Logger.getLogger(EntityGenerator.class.getName());
 
     public static Map<String, Object> getTableInfo(String catalog, String schemaPattern,
-                                                   String tableName, String[] types, String entityName) throws Exception {
+                                                   String tableName, String[] types) throws Exception {
         Properties typeProp = PropertiesUtil.load(Configuration.get("type"));
 
         List<Map<String, Object>> tableList = TableUtil.getTables(catalog, schemaPattern, tableName, types);
@@ -51,7 +51,6 @@ public class EntityGenerator {
             column.put("field", field);
             column.put("firstUpperCaseField", StringUtil.uppercase(field, 0, 1));
         }
-        table.put("entity", entityName);
         table.put("columnList", columnList);
         return table;
     }

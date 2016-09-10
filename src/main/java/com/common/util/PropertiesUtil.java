@@ -35,7 +35,7 @@ public class PropertiesUtil {
      * @throws IOException
      */
     public static Properties load(String pkg) throws IOException {
-        InputStream is = Properties.class.getResourceAsStream(pkg);
+        InputStream is = PropertiesUtil.class.getResourceAsStream(pkg);
         Properties properties = load(is);
         is.close();
         return properties;

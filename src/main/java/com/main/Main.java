@@ -26,7 +26,8 @@ public class Main {
         while (enumeration.hasMoreElements()) {
             String key = String.valueOf(enumeration.nextElement());
             String entityName = tableProp.getProperty(key);
-            Map<String, Object> tableInfo = EntityGenerator.getTableInfo(null, null, key, null, entityName);
+            Map<String, Object> tableInfo = EntityGenerator.getTableInfo(null, null, key, null);
+            tableInfo.put("entity", entityName);
             //java bean
             String code = TemplateUtil.getContent(tableInfo, Configuration.get("entity"));
             File codeFile = new File(entityName + ".java");
