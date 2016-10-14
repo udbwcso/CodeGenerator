@@ -22,7 +22,7 @@ public enum Template {
     private Properties properties;
 
     Template() {
-        InputStream is = Template.class.getResourceAsStream("/properties/doc/template.properties");
+        InputStream is = Template.class.getResourceAsStream("/doc/template.properties");
         try {
             properties = new Properties();
             properties.load(is);

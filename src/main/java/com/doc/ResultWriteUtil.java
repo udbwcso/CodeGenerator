@@ -2,7 +2,10 @@ package com.doc;
 
 import com.common.util.PropertiesUtil;
 import com.database.util.TableUtil;
+import com.doc.bean.Field;
+import com.doc.bean.ResultBean;
 import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -14,14 +17,18 @@ import java.util.*;
  */
 public class ResultWriteUtil {
     private static int jsonLevel = 0;
+    private static Map<String, String> table = new HashMap<>();
+    private static Map<String, ResultBean> resultBeanMap;
 
     public static void main(String[] args) throws Exception {
         String json = Template.INSTANCE.getTemplate("BACK_ORDER_DETAIL");
         jsonLevel = getMaxLevel(json);
-        Map<String, String> table = new HashMap<>();
         table.put("main", "np_back_order");
         table.put("itemList", "np_back_order_item");
         table.put("productDetail", "np_goods_info");
+
+        XMLConfigBuilder xmlConfigBuilder = new XMLConfigBuilder("doc/BackOrderMapper.xml");
+        resultBeanMap = xmlConfigBuilder.build();
 
         write(new JSONObject(json), table);
     }
@@ -53,7 +60,7 @@ public class ResultWriteUtil {
         // 创建一个居中格式
         style.setAlignment(HSSFCellStyle.ALIGN_CENTER);
 
-        write(jsonObject, sheet, 0, 0, table, "main");
+        write(jsonObject, sheet, 0, 0, "main", 1);
         // 第六步，将文件存到指定位置
         FileOutputStream fos = new FileOutputStream("E:/t.xls");
         wb.write(fos);
@@ -61,8 +68,7 @@ public class ResultWriteUtil {
 
     }
 
-    private static void write(JSONObject object, HSSFSheet sheet, int rowIndex, int column, Map<String, String>
-            table, String tableKey) throws Exception {
+    private static void write(JSONObject object, HSSFSheet sheet, int rowIndex, int column, String tableKey, int level) throws Exception {
         Iterator<String> it = object.keySet().iterator();
         List<String> objKeyList = new ArrayList<>();
         List<String> columnKeyList = new ArrayList<>();
@@ -76,26 +82,43 @@ public class ResultWriteUtil {
                 columnKeyList.add(key);
             }
         }
-        String tableName = table.get(tableKey);
-        List<Map<String, Object>> columnList = TableUtil.getColumns(null, null, tableName, null);
 
 
 
-        Properties typeProp = PropertiesUtil.load("/properties/mysql/type_doc.properties");
         for (String s : columnKeyList) {
+            if(jsonLevel - level - 1 >= 1){
+                sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, column, column + jsonLevel - level - 1));
+            }
             HSSFRow row = sheet.createRow(rowIndex);
             rowIndex++;
             HSSFCell cell = row.createCell(column);
             cell.setCellValue(s);
+
+            ResultBean resultBean = resultBeanMap.get(table.get(tableKey));
+            List<Field> fieldList = resultBean.getFieldList();
+            Field field = null;
+            for (int i = 0; i < fieldList.size(); i++) {
+                if(s.equals(fieldList.get(i).getProperty())){
+                    field = fieldList.get(i);
+                    break;
+                }
+            }
+            if(field == null){
+                continue;
+            }
+
+            String tableName = table.get(tableKey);
+            List<Map<String, Object>> columnList = TableUtil.getColumns(null, null, tableName, null);
+            Properties typeProp = PropertiesUtil.load("/properties/mysql/type_doc.properties");
             for (int i = 0; i < columnList.size(); i++) {
                 Map<String, Object> columnInfo = columnList.get(i);
-                String name = String.valueOf(columnInfo.get("COLUMN_NAME")).replaceAll("_", "");
-                if(s.equalsIgnoreCase(name)){
+                String name = String.valueOf(columnInfo.get("COLUMN_NAME"));
+                if(name.equals(field.getColumn())){
                     cell = row.createCell(jsonLevel - 1);
-                    String type = String.valueOf(columnInfo.get("TYPE_NAME"));
-                    cell.setCellValue(typeProp.getProperty(type));
+                    cell.setCellValue(typeProp.getProperty(field.getJdbcType()));
                     cell = row.createCell(jsonLevel);
                     cell.setCellValue(String.valueOf(columnInfo.get("REMARKS")));
+                    break;
                 }
             }
         }
@@ -103,14 +126,16 @@ public class ResultWriteUtil {
 
         for (int i = 0; i < objKeyList.size(); i++) {
             Object value = object.get(objKeyList.get(i));
+            sheet.addMergedRegion(new CellRangeAddress(rowIndex, rowIndex, column, column + jsonLevel - level - 1));
             HSSFRow row = sheet.createRow(rowIndex);
             rowIndex++;
             HSSFCell cell = row.createCell(column);
             cell.setCellValue(objKeyList.get(i));
             if (value instanceof JSONObject) {
-                write((JSONObject) value, sheet, rowIndex, column + 1, table, objKeyList.get(i));
+                write((JSONObject) value, sheet, rowIndex, column + 1, objKeyList.get(i), level + 1);
             } else if (value instanceof JSONArray) {
-                write(((JSONArray) value).getJSONObject(0), sheet, rowIndex, column + 1, table, objKeyList.get(i));
+                write(((JSONArray) value).getJSONObject(0), sheet, rowIndex, column + 1, objKeyList.get(i),
+                        level + 1);
             }
         }
 
