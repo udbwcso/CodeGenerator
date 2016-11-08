@@ -1,6 +1,7 @@
 package com.result;
 
 import com.doc.XPathParser;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -9,7 +10,13 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.*;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -38,12 +45,67 @@ public class XMLConfigBuilder {
 
     public static void main(String[] args) throws Exception {
         XMLConfigBuilder builder = new XMLConfigBuilder("doc/result.xml");
-        builder.build();
+        Map<String, ResultMap> map = builder.build();
+        User user = new User();
+        Child child = new Child();
+        user.setId(1L);
+        child.setName("99");
+        user.setChild(child);
+        System.out.println(new JSONObject(builder.toMap(user, "1")).toString());
     }
+
+    private Map<String, ResultMap> beanMap = new HashMap<>();
+
+    public <T> Map<String, Object> toMap(T bean, String templateId) throws IllegalAccessException, IntrospectionException, InvocationTargetException {
+        return toMap(bean, beanMap.get(templateId));
+    }
+
+
+    public <T> Map<String, Object> toMap(T bean, ResultMap resultMap) throws IntrospectionException, InvocationTargetException,
+            IllegalAccessException {
+        Map<String, Object> valueMap = new LinkedHashMap<>();
+        BeanInfo beanInfo = Introspector.getBeanInfo(bean.getClass());
+        PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+        List<ResultField> fieldList = resultMap.getFieldList();
+        for (ResultField field : fieldList) {
+            Method readMethod = null;
+            for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+                if(field.getProperty().equals(propertyDescriptor.getName())) {
+                    readMethod = propertyDescriptor.getReadMethod();
+                    readMethod.setAccessible(true);
+                }
+            }
+            String key = field.getAlias();
+            if(key == null || key.equals("")) {
+                key = field.getProperty();
+            }
+            if (FieldType.OBJECT.name().equalsIgnoreCase(field.getType())) {
+                Map<String, Object> value = toMap(readMethod.invoke(bean), beanMap.get(field.getResultMapId()));
+                valueMap.put(key, value);
+            } else if (FieldType.ARRAY.name().equalsIgnoreCase(field.getType())) {
+                List list = toList((List) readMethod.invoke(bean), beanMap.get(field.getResultMapId()));
+                valueMap.put(key, list);
+            } else {
+                valueMap.put(key, readMethod.invoke(bean));
+            }
+        }
+        return valueMap;
+    }
+
+
+    public List<Map<String, Object>> toList(List list, ResultMap resultMap) throws IllegalAccessException,
+            IntrospectionException, InvocationTargetException {
+        List<Map<String, Object>> mapList = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            mapList.add(toMap(list.get(i), resultMap));
+        }
+        return mapList;
+    }
+
 
     public Map<String, ResultMap> build() throws Exception {
         NodeList beanNodeList = parser.evalNodes(root, "resultMap");
-        Map<String, ResultMap> beanMap = new HashMap<>();
+//        Map<String, ResultMap> beanMap = new HashMap<>();
         for (int i = 0; i < beanNodeList.getLength(); i++) {
             Node node = beanNodeList.item(i);
             ResultMap resultMap = parseResultMap(node);
@@ -74,6 +136,7 @@ public class XMLConfigBuilder {
             field.setProperty(properties.getProperty("property"));
             field.setAlias(properties.getProperty("alias"));
             field.setResultMapId(properties.getProperty("resultMap"));
+            field.setType(properties.getProperty("type"));
             fieldList.add(field);
         }
         return fieldList;

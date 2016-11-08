@@ -7,6 +7,7 @@ public class ResultField {
     private String property;
     private String alias;
     private String resultMapId;
+    private String type;
 
     public String getResultMapId() {
         return resultMapId;
@@ -30,5 +31,13 @@ public class ResultField {
 
     public void setAlias(String alias) {
         this.alias = alias;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
