@@ -37,10 +37,10 @@ public class StockUtil {
         String shPath = "E:\\stock\\A\\上海A股.xlsx";
         List<Stock> shStockList = getStockList(shPath, 2, 4);
         List<Stock> szStockList = getStockList(szPath, 5, 7);
-        storeDate(szStockList, szDataDirectory);
+        storeData(shStockList, szDataDirectory);
     }
 
-    public static void storeDate(List<Stock> stockList, String dataDirectory) {
+    public static void storeData(List<Stock> stockList, String dataDirectory) {
         List<Stock> list = new ArrayList<>();
         for (int i = 0; i < stockList.size(); i++) {
             list.add(stockList.get(i));
@@ -81,7 +81,7 @@ public class StockUtil {
         return stockList;
     }
 
-    public static void getHistoryDate(String directory, Stock stock, int year, int quarter) throws IOException {
+    public static void getHistoryData(String directory, Stock stock, int year, int quarter) throws IOException {
         List<String[]> list = search(stock.getCode(), year, quarter);
         System.out.println(JsonWrapper.writeValue(stock) + "----" + year + "--" + quarter + "--" + list.size());
         String fileName = stock.getCode() + ".txt";
@@ -98,7 +98,7 @@ public class StockUtil {
         }
     }
 
-    public static String getCurrentDate(String code, String address) throws IOException {
+    public static String getCurrentData(String code, String address) throws IOException {
         String url = "http://hq.sinajs.cn/list=" + address + code;
         HttpClient client = HttpClientBuilder.create().build();
         HttpResponse response = client.execute(new HttpGet(url));

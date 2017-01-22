@@ -27,9 +27,9 @@ public class StockData implements Runnable {
             calendar.setTime(stock.getListingDate());
             int startYear = calendar.get(Calendar.YEAR);
             for (int i = endYear; i >= startYear; i--) {
-                for (int j = 1; j <= 4; j++) {
+                for (int j = 4; j >= 1; j--) {
                     try {
-                        StockUtil.getHistoryDate(directory, stock, i, j);
+                        StockUtil.getHistoryData(directory, stock, i, j);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
