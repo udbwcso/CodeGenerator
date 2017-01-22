@@ -1,8 +1,10 @@
 package com.stock;
 
 import com.doc.JsonWrapper;
-import com.office.ExcelReader;
+import com.stock.bean.ListingSpot;
 import com.stock.bean.Stock;
+import com.stock.service.FileStockDataServiceImpl;
+import com.stock.service.StockDataService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
@@ -20,7 +22,6 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URL;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,8 +36,9 @@ public class StockUtil {
         String szDataDirectory = "D:\\stock\\sz";
         String szPath = "E:\\stock\\A\\深圳A股列表.xlsx";
         String shPath = "E:\\stock\\A\\上海A股.xlsx";
-        List<Stock> shStockList = getStockList(shPath, 2, 4);
-        List<Stock> szStockList = getStockList(szPath, 5, 7);
+        StockDataService stockDataService = new FileStockDataServiceImpl();
+        List<Stock> shStockList = stockDataService.getStockList(ListingSpot.SH);
+        List<Stock> szStockList = stockDataService.getStockList(ListingSpot.SZ);
         storeData(shStockList, szDataDirectory);
     }
 
@@ -53,20 +55,6 @@ public class StockUtil {
         }
     }
 
-    public static List<Stock> getStockList(String path, int codeCell, int dateCell) throws ParseException, IOException {
-        List<String[]> list = ExcelReader.read(path);
-        List<Stock> stockList = new ArrayList<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        for (int i = 1; i < list.size(); i++) {
-            String[] strings = list.get(i);
-            Stock stock = new Stock();
-            stock.setCode(strings[codeCell]);
-            stock.setListingDate(sdf.parse(strings[dateCell]));
-            stockList.add(stock);
-        }
-        return stockList;
-    }
-
     public static List<Stock> getStockList(String path, String charset) throws IOException {
         String string = FileUtils.readFileToString(new File(path), charset);
         String[] values = string.split(System.getProperty("line.separator"));
@@ -81,7 +69,7 @@ public class StockUtil {
         return stockList;
     }
 
-    public static void getHistoryData(String directory, Stock stock, int year, int quarter) throws IOException {
+    public static void getHistoryData(String directory, Stock stock, int year, int quarter, boolean append) throws IOException {
         List<String[]> list = search(stock.getCode(), year, quarter);
         System.out.println(JsonWrapper.writeValue(stock) + "----" + year + "--" + quarter + "--" + list.size());
         String fileName = stock.getCode() + ".txt";
@@ -94,7 +82,7 @@ public class StockUtil {
                 sb.append(strings[j] + " ");
             }
             sb.append(lineSeparator);
-            FileUtils.writeStringToFile(new File(filePath), sb.toString(), true);
+            FileUtils.writeStringToFile(new File(filePath), sb.toString(), append);
         }
     }
 

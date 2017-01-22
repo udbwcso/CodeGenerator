@@ -1,6 +1,7 @@
 package com.stock.bean;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Administrator on 2017/1/19.
@@ -9,7 +10,17 @@ public class Stock {
     private String name;
     private String code;
     private Date listingDate;
-    private String location;
+    private ListingSpot spot;
+
+    private List<StockPrice> priceList;
+
+    public List<StockPrice> getPriceList() {
+        return priceList;
+    }
+
+    public void setPriceList(List<StockPrice> priceList) {
+        this.priceList = priceList;
+    }
 
     public String getName() {
         return name;
@@ -27,12 +38,12 @@ public class Stock {
         this.code = code;
     }
 
-    public String getLocation() {
-        return location;
+    public ListingSpot getSpot() {
+        return spot;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setSpot(ListingSpot spot) {
+        this.spot = spot;
     }
 
     public Date getListingDate() {

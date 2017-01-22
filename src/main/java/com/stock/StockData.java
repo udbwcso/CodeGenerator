@@ -2,6 +2,7 @@ package com.stock;
 
 import com.stock.bean.Stock;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
@@ -29,7 +30,8 @@ public class StockData implements Runnable {
             for (int i = endYear; i >= startYear; i--) {
                 for (int j = 4; j >= 1; j--) {
                     try {
-                        StockUtil.getHistoryData(directory, stock, i, j);
+                        String path = directory + File.separator + i + File.separator + j;
+                        StockUtil.getHistoryData(path, stock, i, j, true);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

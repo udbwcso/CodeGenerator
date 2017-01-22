@@ -14,4 +14,29 @@ public enum ListingSpot {
         this.key = key;
         this.name = name;
     }
+
+    public static ListingSpot getListingSpot(String key) {
+        for (ListingSpot spot : ListingSpot.values()) {
+            if (spot.getKey().equals(key)) {
+                return spot;
+            }
+        }
+        return null;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
