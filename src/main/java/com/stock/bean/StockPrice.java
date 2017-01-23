@@ -2,6 +2,7 @@ package com.stock.bean;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Created by Administrator on 2017/1/22.
@@ -35,6 +36,11 @@ public class StockPrice {
      * 交易金额(元)
      */
     private BigDecimal amount;
+
+    /**
+     * 平均值
+     */
+    private Map<Integer, BigDecimal> average;
 
     public Date getDate() {
         return date;
@@ -90,5 +96,13 @@ public class StockPrice {
 
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
+    }
+
+    public Map<Integer, BigDecimal> getAverage() {
+        return average;
+    }
+
+    public void setAverage(Map<Integer, BigDecimal> average) {
+        this.average = average;
     }
 }

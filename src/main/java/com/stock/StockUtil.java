@@ -3,8 +3,6 @@ package com.stock;
 import com.doc.JsonWrapper;
 import com.stock.bean.ListingSpot;
 import com.stock.bean.Stock;
-import com.stock.service.FileStockDataServiceImpl;
-import com.stock.service.StockDataService;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
@@ -23,6 +21,7 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,14 +31,39 @@ import java.util.List;
 public class StockUtil {
 
     public static void main(String[] args) throws IOException, ParseException {
-        String shDataDirectory = "D:\\stock\\sh";
+//        String shDataDirectory = "D:\\stock\\sh";
         String szDataDirectory = "D:\\stock\\sz";
-        String szPath = "E:\\stock\\A\\深圳A股列表.xlsx";
-        String shPath = "E:\\stock\\A\\上海A股.xlsx";
-        StockDataService stockDataService = new FileStockDataServiceImpl();
-        List<Stock> shStockList = stockDataService.getStockList(ListingSpot.SH);
-        List<Stock> szStockList = stockDataService.getStockList(ListingSpot.SZ);
-        storeData(shStockList, szDataDirectory);
+//        String szPath = "E:\\stock\\A\\深圳A股列表.xlsx";
+//        String shPath = "E:\\stock\\A\\上海A股.xlsx";
+//        StockDataService stockDataService = new FileStockDataServiceImpl();
+//        List<Stock> shStockList = stockDataService.getStockList(ListingSpot.SH);
+//        List<Stock> szStockList = stockDataService.getStockList(ListingSpot.SZ);
+//        storeData(shStockList, szDataDirectory);
+
+        Stock stock = new Stock();
+        stock.setCode("000033");
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(1994, 0, 3);
+        stock.setListingDate(calendar.getTime());
+        stock.setSpot(ListingSpot.SZ);
+        storeData(stock, szDataDirectory);
+    }
+
+    public static void storeData(Stock stock, String directory) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(stock.getListingDate());
+        int startYear = calendar.get(Calendar.YEAR);
+        int endYear = Calendar.getInstance().get(Calendar.YEAR);
+        for (int i = endYear; i >= startYear; i--) {
+            for (int j = 4; j >= 1; j--) {
+                try {
+                    String path = directory + File.separator + i + File.separator + j;
+                    getHistoryData(path, stock, i, j, true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     public static void storeData(List<Stock> stockList, String dataDirectory) {
@@ -75,15 +99,16 @@ public class StockUtil {
         String fileName = stock.getCode() + ".txt";
         String filePath = directory + File.separator + fileName;
         String lineSeparator = System.getProperty("line.separator");
+        StringBuilder rst = new StringBuilder();
         for (int i = 0; i < list.size(); i++) {
             String[] strings = list.get(i);
-            StringBuilder sb = new StringBuilder();
+//            StringBuilder sb = new StringBuilder();
             for (int j = 0; j < strings.length; j++) {
-                sb.append(strings[j] + " ");
+                rst.append(strings[j] + " ");
             }
-            sb.append(lineSeparator);
-            FileUtils.writeStringToFile(new File(filePath), sb.toString(), append);
+            rst.append(lineSeparator);
         }
+        FileUtils.writeStringToFile(new File(filePath), rst.toString(), append);
     }
 
     public static String getCurrentData(String code, String address) throws IOException {

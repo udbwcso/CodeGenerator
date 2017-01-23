@@ -6,15 +6,14 @@ import com.stock.bean.Stock;
 import com.stock.bean.StockPrice;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Administrator on 2017/1/22.
@@ -65,6 +64,35 @@ public class FileStockDataServiceImpl implements StockDataService {
             }
         }
         return priceList;
+    }
+
+    @Override
+    public List<StockPrice> getStockPriceList(Stock stock, Date startDate, Date endDate) throws IOException, ParseException {
+        Calendar start = Calendar.getInstance();
+        start.setTime(startDate);
+        Calendar end = Calendar.getInstance();
+        end.setTime(endDate);
+        List<StockPrice> priceList = new ArrayList<>();
+        for (int i = start.get(Calendar.YEAR); i <= end.get(Calendar.YEAR); i++) {
+            for (int j = 4; j >= 1; j--) {
+                priceList.addAll(getStockPriceList(stock, i, j));
+            }
+        }
+        return getStockPriceList(priceList, startDate, endDate);
+    }
+
+    @Override
+    public List<StockPrice> getStockPriceList(List<StockPrice> priceList, Date startDate, Date endDate) {
+        List<StockPrice> list = new ArrayList<>();
+        for (int i = 0; i < priceList.size(); i++) {
+            StockPrice price = priceList.get(i);
+            DateTime dateTime = new DateTime(price.getDate());
+            if(dateTime.isAfter(startDate.getTime())
+                    && dateTime.isBefore(endDate.getTime())) {
+                list.add(price);
+            }
+        }
+        return list;
     }
 
     @Override

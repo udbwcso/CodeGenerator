@@ -6,6 +6,7 @@ import com.stock.bean.StockPrice;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -15,6 +16,21 @@ public interface StockDataService {
     List<Stock> getStockList(ListingSpot spot) throws IOException, ParseException;
 
     List<StockPrice> getStockPriceList(Stock stock, int year, int quarter) throws IOException, ParseException;
+
+
+    /**
+     * 取某一时间的数据
+     * @param stock
+     * @param startDate
+     * @param endDate
+     * @return
+     * @throws IOException
+     * @throws ParseException
+     */
+    List<StockPrice> getStockPriceList(Stock stock, Date startDate, Date endDate) throws IOException, ParseException;
+
+    List<StockPrice> getStockPriceList(List<StockPrice> priceList, Date startDate, Date endDate);
+
 
     List<StockPrice> getStockPriceList(Stock stock, int year) throws IOException, ParseException;
 
