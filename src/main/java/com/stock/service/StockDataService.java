@@ -17,6 +17,8 @@ public interface StockDataService {
 
     List<StockPrice> getStockPriceList(Stock stock, int year, int quarter) throws IOException, ParseException;
 
+    List<StockPrice> getStockPriceList(Stock stock) throws IOException, ParseException;
+
 
     /**
      * 取某一时间的数据

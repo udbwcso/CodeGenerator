@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -18,10 +17,6 @@ public class Main {
     public static void main(String[] args) throws IOException, ParseException {
         StockDataService stockDataService = new FileStockDataServiceImpl();
         List<Stock> stockList = stockDataService.getStockList(ListingSpot.SZ);
-        Calendar start = Calendar.getInstance();
-        start.set(2017, 0, 17);
-        Calendar end  = Calendar.getInstance();
-        end.set(2017, 0, 20);
         for (int i = 0; i < stockList.size(); i++) {
             Stock stock = stockList.get(i);
             List<StockPrice> priceList = stockDataService.getStockPriceList(stock, 2017);

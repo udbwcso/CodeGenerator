@@ -67,6 +67,21 @@ public class FileStockDataServiceImpl implements StockDataService {
     }
 
     @Override
+    public List<StockPrice> getStockPriceList(Stock stock) throws IOException, ParseException {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(stock.getListingDate());
+        int startYear = calendar.get(Calendar.YEAR);
+        int endYear = Calendar.getInstance().get(Calendar.YEAR);
+        List<StockPrice> priceList = new ArrayList<>();
+        for (int i = endYear; i >= startYear; i--) {
+            for (int j = 4; j >= 1; j--) {
+                priceList.addAll(getStockPriceList(stock, i, j));
+            }
+        }
+        return priceList;
+    }
+
+    @Override
     public List<StockPrice> getStockPriceList(Stock stock, Date startDate, Date endDate) throws IOException, ParseException {
         Calendar start = Calendar.getInstance();
         start.setTime(startDate);
