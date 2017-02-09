@@ -19,12 +19,12 @@ public class Main {
         List<Stock> stockList = stockDataService.getStockList(ListingSpot.SZ);
         for (int i = 0; i < stockList.size(); i++) {
             Stock stock = stockList.get(i);
-            List<StockPrice> priceList = stockDataService.getStockPriceList(stock, 2017);
-            priceList.addAll(stockDataService.getStockPriceList(stock, 2016));
+            List<StockPrice> priceList = stockDataService.getStockPriceList(stock);
+            priceList.addAll(stockDataService.getStockPriceList(stock));
 
             CalculateService calculateService = new CalculateServiceImpl();
             Integer[] days = new Integer[]{5, 10, 20, 30};
-            if(priceList.size() < days[days.length - 1] + days[0]) {
+            if (priceList.size() < days[days.length - 1] + days[0]) {
                 continue;
             }
             calculateService.average(priceList, days, 3);
@@ -38,11 +38,11 @@ public class Main {
                 for (int k = 0; k < result.length; k++) {
                     BigDecimal sub = result[k].subtract(result[0]).abs();
                     BigDecimal deviate = sub.divide(priceList.get(0).getClosingPrice(), 6, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
-                    if(deviate.compareTo(new BigDecimal("0.4")) < 0) {
+                    if (deviate.compareTo(new BigDecimal("0.05")) < 0) {
                         ++cnt;
                     }
                 }
-                if(cnt == days.length) {
+                if (cnt >= days.length - 1) {
                     for (BigDecimal average : result) {
                         System.out.print(average + " ");
                     }

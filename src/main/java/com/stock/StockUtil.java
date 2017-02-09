@@ -31,15 +31,15 @@ import java.util.*;
 public class StockUtil {
 
     public static void main(String[] args) throws IOException, ParseException {
-        String shDataDirectory = "D:\\stock1\\sh";
-        String szDataDirectory = "D:\\stock1\\sz";
+        String shDataDirectory = "D:\\stock_2_1\\sh";
+        String szDataDirectory = "D:\\stock_1_1\\sz";
         StockDataService stockDataService = new FileStockDataServiceImpl();
         List<Stock> shStockList = stockDataService.getStockList(ListingSpot.SH);
         List<Stock> szStockList = stockDataService.getStockList(ListingSpot.SZ);
         Calendar calendar = Calendar.getInstance();
         calendar.set(2000, 0, 0);
         storeData(shStockList, shDataDirectory, calendar, false);
-        storeData(szStockList, szDataDirectory, calendar, false);
+//        storeData(szStockList, szDataDirectory, calendar, false);
 
 //        Stock stock = new Stock();
 //        stock.setCode("000651");
@@ -49,11 +49,22 @@ public class StockUtil {
 //        storeData(stock, szDataDirectory, calendar, false);
     }
 
+    public static List<Stock> getStockByCode(List<Stock> stockList, String... codes) {
+        List<String> codeList = Arrays.asList(codes);
+        List<Stock> rstList = new ArrayList<>();
+        for (int i = 0; i < stockList.size(); i++) {
+            if(codeList.contains(stockList.get(i).getCode())) {
+                rstList.add(stockList.get(i));
+            }
+        }
+        return rstList;
+    }
+
     public static void storeData(List<Stock> stockList, String directory, Calendar startDate, boolean append) {
         List<Stock> list = new ArrayList<>();
         for (int i = 0; i < stockList.size(); i++) {
             list.add(stockList.get(i));
-            if((i + 1) % 20 == 0 || i == stockList.size() - 1) {
+            if((i + 1) % 200 == 0 || i == stockList.size() - 1) {
                 StockData stockData = new StockData(list, directory, startDate, append);
                 Thread thread = new Thread(stockData);
                 thread.start();
@@ -75,20 +86,21 @@ public class StockUtil {
             }
             rst.append(lineSeparator);
         }
-        FileUtils.writeStringToFile(new File(filePath), rst.toString(), append);
+        File file = new File(filePath);
+        if(!file.exists()) {
+            FileUtils.writeStringToFile(file, rst.toString(), append);
+        }
+        System.out.println(stock.getCode() + "----" + list.size());
     }
 
     public static List<String[]> getHistoryData(Stock stock, Calendar startDate) throws ParseException {
         int startYear = startDate.get(Calendar.YEAR);
         int endYear = Calendar.getInstance().get(Calendar.YEAR);
+        int endQuarter = Calendar.getInstance().get(Calendar.MONTH) / 3 + 1;
         List<String[]> stockList = new ArrayList<>();
         for (int i = endYear; i >= startYear; i--) {
-            for (int j = 4; j >= 1; j--) {
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            int j = i == endYear ? endQuarter : 4;
+            for (; j >= 1; j--) {
                 List<String[]> list = getHistoryData(stock, i, j);
                 stockList.addAll(list);
             }
@@ -195,7 +207,13 @@ public class StockUtil {
             return list;
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println(stock);
+            System.out.println(stock + "--" + year + "--" + quarter);
+            String error = stock + ",";
+            try {
+                FileUtils.writeStringToFile(new File("D:\\error.txt"), error, true);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
         return Collections.emptyList();
     }

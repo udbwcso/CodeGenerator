@@ -6,6 +6,7 @@ import com.stock.bean.StockPrice;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -13,9 +14,9 @@ import java.util.List;
  * Created by Administrator on 2017/1/22.
  */
 public interface StockDataService {
-    List<Stock> getStockList(ListingSpot spot) throws IOException, ParseException;
+//    List<Stock> getStockByCode(List<Stock> stockList, String... codes);
 
-    List<StockPrice> getStockPriceList(Stock stock, int year, int quarter) throws IOException, ParseException;
+    List<Stock> getStockList(ListingSpot spot) throws IOException, ParseException;
 
     List<StockPrice> getStockPriceList(Stock stock) throws IOException, ParseException;
 
@@ -29,12 +30,10 @@ public interface StockDataService {
      * @throws IOException
      * @throws ParseException
      */
-    List<StockPrice> getStockPriceList(Stock stock, Date startDate, Date endDate) throws IOException, ParseException;
+    List<StockPrice> getStockPriceList(Stock stock, Calendar startDate, Calendar endDate) throws IOException, ParseException;
 
     List<StockPrice> getStockPriceList(List<StockPrice> priceList, Date startDate, Date endDate);
 
-
-    List<StockPrice> getStockPriceList(Stock stock, int year) throws IOException, ParseException;
 
     void storeStockPriceData(List<StockPrice> priceList);
 }

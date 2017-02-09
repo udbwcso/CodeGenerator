@@ -25,6 +25,18 @@ public class FileStockDataServiceImpl implements StockDataService {
     private static final String stockPath = "D:\\stock";
 
 
+//    @Override
+//    public List<Stock> getStockByCode(List<Stock> stockList, String... codes) {
+//        List<String> codeList = Arrays.asList(codes);
+//        List<Stock> rstList = new ArrayList<>();
+//        for (int i = 0; i < stockList.size(); i++) {
+//            if(codeList.contains(stockList.get(i).getCode())) {
+//                rstList.add(stockList.get(i));
+//            }
+//        }
+//        return rstList;
+//    }
+
     @Override
     public List<Stock> getStockList(ListingSpot spot) throws IOException, ParseException {
         if(spot.equals(ListingSpot.SH)) {
@@ -36,9 +48,8 @@ public class FileStockDataServiceImpl implements StockDataService {
     }
 
     @Override
-    public List<StockPrice> getStockPriceList(Stock stock, int year, int quarter) throws IOException, ParseException {
+    public List<StockPrice> getStockPriceList(Stock stock) throws IOException, ParseException {
         String path = stockPath + File.separator + stock.getSpot().getKey()
-                + File.separator + year + File.separator + quarter
                 + File.separator + stock.getCode() + ".txt";
         File file = new File(path);
         if(!file.exists()) {
@@ -49,8 +60,7 @@ public class FileStockDataServiceImpl implements StockDataService {
         List<StockPrice> priceList = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         for (int i = 0; i < strings.length; i++) {
-            if (StringUtils.isNotEmpty(strings[i].trim())
-                    && !strings[i].trim().startsWith("日期")) {
+            if (StringUtils.isNotEmpty(strings[i].trim())) {
                 String[] info = strings[i].split(" ");
                 StockPrice price = new StockPrice();
                 price.setDate(sdf.parse(info[0]));
@@ -67,33 +77,19 @@ public class FileStockDataServiceImpl implements StockDataService {
     }
 
     @Override
-    public List<StockPrice> getStockPriceList(Stock stock) throws IOException, ParseException {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(stock.getListingDate());
-        int startYear = calendar.get(Calendar.YEAR);
-        int endYear = Calendar.getInstance().get(Calendar.YEAR);
-        List<StockPrice> priceList = new ArrayList<>();
-        for (int i = endYear; i >= startYear; i--) {
-            for (int j = 4; j >= 1; j--) {
-                priceList.addAll(getStockPriceList(stock, i, j));
+    public List<StockPrice> getStockPriceList(Stock stock, Calendar startDate, Calendar endDate) throws IOException, ParseException {
+        List<StockPrice> priceList = getStockPriceList(stock);
+        List<StockPrice> rstList = new ArrayList<>();
+        DateTime start = new DateTime(endDate.getTimeInMillis());
+        DateTime end = new DateTime(startDate.getTimeInMillis());
+        for (int i = 0; i < priceList.size(); i++) {
+            StockPrice price = priceList.get(i);
+            if(start.isBefore(price.getDate().getTime())
+                    && end.isAfter(price.getDate().getTime())) {
+                rstList.add(price);
             }
         }
-        return priceList;
-    }
-
-    @Override
-    public List<StockPrice> getStockPriceList(Stock stock, Date startDate, Date endDate) throws IOException, ParseException {
-        Calendar start = Calendar.getInstance();
-        start.setTime(startDate);
-        Calendar end = Calendar.getInstance();
-        end.setTime(endDate);
-        List<StockPrice> priceList = new ArrayList<>();
-        for (int i = start.get(Calendar.YEAR); i <= end.get(Calendar.YEAR); i++) {
-            for (int j = 4; j >= 1; j--) {
-                priceList.addAll(getStockPriceList(stock, i, j));
-            }
-        }
-        return getStockPriceList(priceList, startDate, endDate);
+        return rstList;
     }
 
     @Override
@@ -108,15 +104,6 @@ public class FileStockDataServiceImpl implements StockDataService {
             }
         }
         return list;
-    }
-
-    @Override
-    public List<StockPrice> getStockPriceList(Stock stock, int year) throws IOException, ParseException {
-        List<StockPrice> priceList = new ArrayList<>();
-        for (int i = 4; i > 0; i--) {
-            priceList.addAll(getStockPriceList(stock, year, i));
-        }
-        return priceList;
     }
 
     @Override
