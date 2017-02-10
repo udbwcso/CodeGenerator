@@ -10,14 +10,14 @@ import java.util.List;
 /**
  * Created by Administrator on 2017/1/20.
  */
-public class StockData implements Runnable {
+public class StoreStockDataThread implements Runnable {
 
     private List<Stock> stockList;
     private String directory;
     private Calendar startDate;
     private boolean append;
 
-    public StockData(List<Stock> stockList, String directory, Calendar startDate, boolean append){
+    public StoreStockDataThread(List<Stock> stockList, String directory, Calendar startDate, boolean append){
         this.stockList = stockList;
         this.directory = directory;
         this.startDate = startDate;
@@ -28,7 +28,7 @@ public class StockData implements Runnable {
     public void run() {
         for (Stock stock : stockList) {
             try {
-                StockUtil.storeData(stock, directory, startDate, append);
+                StockDateUtil.storeData(stock, directory, startDate, append);
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (ParseException e) {

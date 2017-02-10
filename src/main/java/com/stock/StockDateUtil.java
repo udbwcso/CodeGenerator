@@ -28,7 +28,7 @@ import java.util.*;
 /**
  * Created by Administrator on 2017/1/18.
  */
-public class StockUtil {
+public class StockDateUtil {
 
     public static void main(String[] args) throws IOException, ParseException {
         String shDataDirectory = "D:\\stock_2_1\\sh";
@@ -60,12 +60,20 @@ public class StockUtil {
         return rstList;
     }
 
+    /**
+     * 从网上获取股票价格数据
+     * 并保存到文件中
+     * @param stockList 股票信息列表
+     * @param directory 存储数据的根目录
+     * @param startDate 开始时间
+     * @param append 写文件时是否是追加
+     */
     public static void storeData(List<Stock> stockList, String directory, Calendar startDate, boolean append) {
         List<Stock> list = new ArrayList<>();
         for (int i = 0; i < stockList.size(); i++) {
             list.add(stockList.get(i));
             if((i + 1) % 200 == 0 || i == stockList.size() - 1) {
-                StockData stockData = new StockData(list, directory, startDate, append);
+                StoreStockDataThread stockData = new StoreStockDataThread(list, directory, startDate, append);
                 Thread thread = new Thread(stockData);
                 thread.start();
                 list = new ArrayList<>();
@@ -73,6 +81,15 @@ public class StockUtil {
         }
     }
 
+    /**
+     * 获取并保存股票价格信息
+     * @param stock 股票信息
+     * @param directory 存储数据的根目录
+     * @param startDate 开始时间
+     * @param append 写文件时是否是追加
+     * @throws IOException
+     * @throws ParseException
+     */
     public static void storeData(Stock stock, String directory, Calendar startDate, boolean append) throws IOException, ParseException {
         String fileName = stock.getCode() + ".txt";
         String filePath = directory + File.separator + fileName;
@@ -93,6 +110,13 @@ public class StockUtil {
         System.out.println(stock.getCode() + "----" + list.size());
     }
 
+    /**
+     * 获取股票价格信息
+     * @param stock 股票信息
+     * @param startDate 开始时间
+     * @return
+     * @throws ParseException
+     */
     public static List<String[]> getHistoryData(Stock stock, Calendar startDate) throws ParseException {
         int startYear = startDate.get(Calendar.YEAR);
         int endYear = Calendar.getInstance().get(Calendar.YEAR);
@@ -118,6 +142,13 @@ public class StockUtil {
         return rstList;
     }
 
+    /**
+     * 获取股票价格信息
+     * @param stock 股票信息
+     * @param year 年份
+     * @param quarter 季度
+     * @return
+     */
     public static List<String[]> getHistoryData(Stock stock, int year, int quarter) {
         List<String[]> list = search(stock.getCode(), year, quarter);
         List<String[]> rstList = new ArrayList<>();
@@ -177,6 +208,13 @@ public class StockUtil {
         return null;
     }
 
+    /**
+     * 获取股票价格信息
+     * @param stock 股票信息
+     * @param year 年份
+     * @param quarter 季度
+     * @return
+     */
     public static List<String[]> search(String stock, int year, int quarter) {
         Document doc = null;
         // create URL string

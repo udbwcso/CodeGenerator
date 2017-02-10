@@ -1,6 +1,6 @@
 package com.stock.util;
 
-import com.stock.StockUtil;
+import com.stock.StockDateUtil;
 import com.stock.bean.ListingSpot;
 import com.stock.bean.Stock;
 import com.stock.service.FileStockDataServiceImpl;
@@ -39,6 +39,6 @@ public class T {
         Calendar calendar = Calendar.getInstance();
         calendar.set(2000, 0, 0);
 //        StockUtil.storeData(shStockList, shDataDirectory, calendar, false);
-        StockUtil.storeData(newList, shDataDirectory, calendar, false);
+        StockDateUtil.storeData(newList, shDataDirectory, calendar, false);
     }
 }
