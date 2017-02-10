@@ -28,21 +28,17 @@ public class T {
         String szDataDirectory = "D:\\stock_1_2\\sz";
         StockDataService stockDataService = new FileStockDataServiceImpl();
         List<Stock> shStockList = stockDataService.getStockList(ListingSpot.SH);
-//        List<Stock> szStockList = stockDataService.getStockList(ListingSpot.SZ);
+        List<Stock> szStockList = stockDataService.getStockList(ListingSpot.SZ);
         List<Stock> newList = new ArrayList<>();
         System.out.println(set.size());
         for (int i = 0; i < shStockList.size(); i++) {
             if(set.contains(shStockList.get(i).getCode())) {
                 newList.add(shStockList.get(i));
             }
-//            if (szStockList.get(i).getCode().equals("002460")
-//                    || szStockList.get(i).getCode().equals("300212")) {
-//                newList.add(szStockList.get(i));
-//            }
         }
         Calendar calendar = Calendar.getInstance();
         calendar.set(2000, 0, 0);
-//        storeData(shStockList, shDataDirectory, calendar, false);
+//        StockUtil.storeData(shStockList, shDataDirectory, calendar, false);
         StockUtil.storeData(newList, shDataDirectory, calendar, false);
     }
 }

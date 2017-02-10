@@ -7,14 +7,14 @@ import com.stock.bean.StockPrice;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 /**
  * Created by Administrator on 2017/1/22.
  */
 public interface StockDataService {
-//    List<Stock> getStockByCode(List<Stock> stockList, String... codes);
+
+    List<Stock> getStockList() throws IOException, ParseException;
 
     List<Stock> getStockList(ListingSpot spot) throws IOException, ParseException;
 
@@ -32,8 +32,7 @@ public interface StockDataService {
      */
     List<StockPrice> getStockPriceList(Stock stock, Calendar startDate, Calendar endDate) throws IOException, ParseException;
 
-    List<StockPrice> getStockPriceList(List<StockPrice> priceList, Date startDate, Date endDate);
-
+    List<StockPrice> getStockPriceList(List<StockPrice> priceList, Calendar startDate, Calendar endDate);
 
     void storeStockPriceData(List<StockPrice> priceList);
 }

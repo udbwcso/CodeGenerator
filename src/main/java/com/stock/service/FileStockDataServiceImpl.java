@@ -13,7 +13,10 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by Administrator on 2017/1/22.
@@ -25,17 +28,13 @@ public class FileStockDataServiceImpl implements StockDataService {
     private static final String stockPath = "D:\\stock";
 
 
-//    @Override
-//    public List<Stock> getStockByCode(List<Stock> stockList, String... codes) {
-//        List<String> codeList = Arrays.asList(codes);
-//        List<Stock> rstList = new ArrayList<>();
-//        for (int i = 0; i < stockList.size(); i++) {
-//            if(codeList.contains(stockList.get(i).getCode())) {
-//                rstList.add(stockList.get(i));
-//            }
-//        }
-//        return rstList;
-//    }
+    @Override
+    public List<Stock> getStockList() throws IOException, ParseException {
+        List<Stock> list = new ArrayList<>();
+        list.addAll(getStockList(ListingSpot.SH, shPath, 2, 4));
+        list.addAll(getStockList(ListingSpot.SZ, szPath, 5, 7));
+        return list;
+    }
 
     @Override
     public List<Stock> getStockList(ListingSpot spot) throws IOException, ParseException {
@@ -79,6 +78,11 @@ public class FileStockDataServiceImpl implements StockDataService {
     @Override
     public List<StockPrice> getStockPriceList(Stock stock, Calendar startDate, Calendar endDate) throws IOException, ParseException {
         List<StockPrice> priceList = getStockPriceList(stock);
+        return getStockPriceList(priceList, startDate, endDate);
+    }
+
+    @Override
+    public List<StockPrice> getStockPriceList(List<StockPrice> priceList, Calendar startDate, Calendar endDate) {
         List<StockPrice> rstList = new ArrayList<>();
         DateTime start = new DateTime(endDate.getTimeInMillis());
         DateTime end = new DateTime(startDate.getTimeInMillis());
@@ -90,20 +94,6 @@ public class FileStockDataServiceImpl implements StockDataService {
             }
         }
         return rstList;
-    }
-
-    @Override
-    public List<StockPrice> getStockPriceList(List<StockPrice> priceList, Date startDate, Date endDate) {
-        List<StockPrice> list = new ArrayList<>();
-        for (int i = 0; i < priceList.size(); i++) {
-            StockPrice price = priceList.get(i);
-            DateTime dateTime = new DateTime(price.getDate());
-            if(dateTime.isAfter(startDate.getTime())
-                    && dateTime.isBefore(endDate.getTime())) {
-                list.add(price);
-            }
-        }
-        return list;
     }
 
     @Override
