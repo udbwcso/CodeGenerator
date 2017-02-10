@@ -7,58 +7,13 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Administrator on 2017/1/23.
  */
 public class AverageStrategyServiceImpl implements StrategyService {
-    //    @Override
-    public void test1(Stock stock) throws IOException, ParseException {
-        StockDataService stockDataService = new FileStockDataServiceImpl();
-        List<StockPrice> priceList = stockDataService.getStockPriceList(stock);
-        CalculateService calculateService = new CalculateServiceImpl();
-        Integer[] days = new Integer[]{5, 20};
-        calculateService.average(priceList, days, 3);
-        boolean isBuy = false;
-        //-1:初始化;0:等于;1:小于;2:大于;
-        BigDecimal principal = new BigDecimal(10000);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        for (int i = priceList.size() - 22; i >= 1; i--) {
-            StockPrice yesterday = priceList.get(i + 1);
-            StockPrice today = priceList.get(i);
-            Map<Integer, BigDecimal> yesterdayAverage = yesterday.getAverage();
-            Map<Integer, BigDecimal> todayAverage = today.getAverage();
-            if (yesterdayAverage.get(days[0]).compareTo(yesterdayAverage.get(days[1])) >= 0
-                    && todayAverage.get(days[0]).compareTo(todayAverage.get(days[1])) < 0) {
-                if (isBuy) {
-                    System.out.println(today.getClosingPrice() + "--" + today.getAverage().get(days[0]) + "--" + isBuy);
-
-                    //sell
-                    BigDecimal sell = today.getLowestPrice().multiply(new BigDecimal(200));
-                    principal = principal.add(sell).subtract(sell.multiply(new BigDecimal("0.01")));
-                    isBuy = false;
-                    System.out.println(sdf.format(today.getDate()) + " sell:" + sell.toString());
-                }
-            } else if (yesterdayAverage.get(days[0]).compareTo(yesterdayAverage.get(days[1])) <= 0
-                    && todayAverage.get(days[0]).compareTo(todayAverage.get(days[1])) > 0) {
-                if (!isBuy) {
-                    //buy
-                    BigDecimal buy = today.getHighestPrice().multiply(new BigDecimal(200));
-                    if (principal.compareTo(buy) > 0 && !isBuy) {
-                        System.out.println(today.getClosingPrice() + "--" + today.getAverage().get(days[0]) + "--" + isBuy);
-
-                        principal = principal.subtract(buy).subtract(buy.multiply(new BigDecimal("0.01")));
-                        isBuy = true;
-                        System.out.println(sdf.format(today.getDate()) + " buy:" + buy.toString());
-                    }
-                }
-            }
-        }
-        System.out.println(principal.toString());
-    }
 
     @Override
     public void test(Stock stock) throws IOException, ParseException {
@@ -67,46 +22,102 @@ public class AverageStrategyServiceImpl implements StrategyService {
         CalculateService calculateService = new CalculateServiceImpl();
         Integer[] days = new Integer[]{5, 10, 20, 30};
         calculateService.average(priceList, days, 3);
-        boolean isBuy = false;
-        BigDecimal principal = new BigDecimal(20000);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        int buyCount = 0;
-        for (int i = priceList.size() - 32; i >= 1; i--) {
-            StockPrice today = priceList.get(i);
+
+        List<StockPrice> keyPointList = new ArrayList<>();
+        for (int i = 300; i >= 2; i--) {
+            StockPrice price = priceList.get(i);
             BigDecimal[] result = new BigDecimal[days.length];
             for (int j = 0; j < days.length; j++) {
-                result[j] = today.getAverage().get(days[j]);
+                result[j] = price.getAverage().get(days[j]);
             }
-            Arrays.sort(result);
+            //均线收敛
             int cnt = 0;
-            for (int j = 0; j < result.length - 1; j++) {
-                BigDecimal sub = result[j].subtract(result[j + 1]).abs();
-                BigDecimal deviate = sub.divide(result[j], 6, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+            for (int j = 0; j < result.length; j++) {
+                BigDecimal sub = result[j].subtract(result[0]).abs();
+                BigDecimal deviate = sub.divide(priceList.get(0).getClosingPrice(), 6, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
                 if (deviate.compareTo(new BigDecimal("0.5")) < 0) {
                     ++cnt;
                 }
             }
-            if (cnt >= days.length - 2 && today.getClosingPrice().compareTo(result[3]) >= 0) {
-                //buy
-                BigDecimal buy = today.getHighestPrice().multiply(new BigDecimal(200));
-                isBuy = true;
-                System.out.println(today.getClosingPrice() + "--" + today.getAverage().get(days[0]) + "--" + isBuy);
-                principal = principal.subtract(buy).subtract(buy.multiply(new BigDecimal("0.01")));
-                buyCount = buyCount + 200;
-                System.out.println(sdf.format(today.getDate()) + " buy:" + buy.toString());
-                System.out.println();
+            if (cnt >= days.length - 1) {
+//                keyPointList.add(nextDayPrice);
+                //均线收敛后观察15天后续走势
+                int divergentDays = 0;//连续发散天数
+                for (int j = 1; j < 15; j++) {
+                    int divergentCnt = 0;
+                    --i;
+                    StockPrice latestPrice = priceList.get(i);
+                    for (int k = 0; k < days.length - 1; k++) {
+                        if(latestPrice.getAverage().get(days[k]).compareTo(latestPrice.getAverage().get(days[k + 1])) > 0) {
+                            divergentCnt++;
+                        }
+                    }
+                    if(divergentCnt >= days.length - 1) {
+                        divergentDays++;
+                    } else {
+                        divergentDays = 0;
+                    }
+                    if(divergentDays >= 2) {
+                        keyPointList.add(latestPrice);
+                        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                        System.out.println(sdf.format(latestPrice.getDate()));
+                        break;
+                    }
+                }
             }
         }
 
-        for (int i = priceList.size() - 32; i >= 1; i--) {
-            StockPrice today = priceList.get(i);
-            BigDecimal[] result = new BigDecimal[days.length];
-            for (int j = 0; j < days.length; j++) {
-                result[j] = today.getAverage().get(days[j]);
+        BigDecimal initMoney = new BigDecimal(20000);
+        int positions = 0;
+        BigDecimal positionsMoney = new BigDecimal(0);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        for (int i = priceList.size() - 1; i >= 0; i--) {
+            StockPrice price = priceList.get(i);
+            boolean isBuy = false;
+            for (int j = 0; j < keyPointList.size(); j++) {
+                if(price.getDate().equals(keyPointList.get(j).getDate())) {
+                    //buy
+                    BigDecimal buy = price.getHighestPrice().multiply(new BigDecimal(200));
+                    if(initMoney.compareTo(buy) >= 0) {
+                        positions = positions + 200;
+                        initMoney = initMoney.subtract(buy).subtract(buy.multiply(new BigDecimal("0.003")));
+                        isBuy = true;
+                        positionsMoney = positionsMoney.add(buy);
+                        System.out.println("buy" + "--" + sdf.format(price.getDate()) + "--" + positions + "--" + initMoney.toString());
+                    }
+                }
             }
-            if(result[0].compareTo(result[2]) == 0) {
-                System.out.println(sdf.format(today.getDate()) + " sell");
+            //当天买的不能当天卖
+            if(isBuy) {
+                continue;
+            }
+            BigDecimal lossPercent = BigDecimal.ZERO;
+            if(positions > 0) {
+                lossPercent = BigDecimal.ONE.subtract(positionsMoney.divide(new BigDecimal(positions), 6, BigDecimal.ROUND_HALF_UP).divide(price.getClosingPrice(), 6, BigDecimal.ROUND_HALF_UP));
+            }
+            if(lossPercent.compareTo(BigDecimal.ZERO) != 0) {
+                System.out.println(lossPercent.toString());
+            }
+            if(positions > 0 && price.getAverage().get(days[0]).compareTo(price.getAverage().get(days[2])) == -1) {
+                //sell
+                BigDecimal sell = price.getLowestPrice().multiply(new BigDecimal(positions));
+                initMoney = initMoney.add(sell).subtract(sell.multiply(new BigDecimal("0.003")));
+                positions = 0;
+                positionsMoney = BigDecimal.ZERO;
+                System.out.println("sell" + "--" + sdf.format(price.getDate()) + "--" + positions + "--" + initMoney.toString());
+                System.out.println(lossPercent.toString());
+            }
+            if(positions > 100 && lossPercent.abs().compareTo(new BigDecimal(0.06)) >= 0) {
+                //sell
+                BigDecimal sell = price.getLowestPrice().multiply(new BigDecimal(100));
+                initMoney = initMoney.add(sell).subtract(sell.multiply(new BigDecimal("0.003")));
+                positions = positions - 100;
+                positionsMoney = positionsMoney.subtract(sell);
+                System.out.println("sell" + "--" + sdf.format(price.getDate()) + "--" + positions + "--" + initMoney.toString());
+                System.out.println(lossPercent.toString());
             }
         }
+        System.out.println(initMoney.toString() + "--" + positionsMoney.toString());
+        System.out.println(positions);
     }
 }

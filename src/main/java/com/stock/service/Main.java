@@ -12,6 +12,7 @@ import java.util.List;
 
 /**
  * Created by Administrator on 2017/1/22.
+ * 找出平均值收敛的数据
  */
 public class Main {
     public static void main(String[] args) throws IOException, ParseException {
