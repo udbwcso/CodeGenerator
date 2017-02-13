@@ -1,6 +1,8 @@
 package com.stock.bean;
 
 import java.math.BigDecimal;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
@@ -41,6 +43,38 @@ public class StockPrice {
      * 平均值
      */
     private Map<Integer, BigDecimal> average;
+
+    public StockPrice() {
+    }
+
+    public StockPrice(String string) throws ParseException {
+        this(string.split(" "));
+    }
+
+    public StockPrice(String[] strings) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        setDate(sdf.parse(strings[0]));
+        setOpeningPrice(new BigDecimal(strings[1]));
+        setHighestPrice(new BigDecimal(strings[2]));
+        setClosingPrice(new BigDecimal(strings[3]));
+        setLowestPrice(new BigDecimal(strings[4]));
+        setTradingVolume(new BigDecimal(strings[5]));
+        setAmount(new BigDecimal(strings[6]));
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        sb.append(sdf.format(date)).append(" ");
+        sb.append(openingPrice.toString()).append(" ");
+        sb.append(highestPrice.toString()).append(" ");
+        sb.append(closingPrice.toString()).append(" ");
+        sb.append(lowestPrice.toString()).append(" ");
+        sb.append(tradingVolume.toString()).append(" ");
+        sb.append(amount.toString());
+        return sb.toString();
+    }
 
     public Date getDate() {
         return date;

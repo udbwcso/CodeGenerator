@@ -10,7 +10,6 @@ import org.joda.time.DateTime;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,9 +18,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by Administrator on 2017/1/22.
+ * Created by Administrator on 2017/2/13.
  */
-public class FileStockDataServiceImpl implements StockDataService {
+public class StockDataFileReader implements StockDataReader {
 
     private static final String szPath = "E:\\stock\\A\\深圳A股列表.xlsx";
     private static final String shPath = "E:\\stock\\A\\上海A股.xlsx";
@@ -57,18 +56,9 @@ public class FileStockDataServiceImpl implements StockDataService {
         String priceData = FileUtils.readFileToString(file, "UTF-8");
         String[] strings = priceData.split(System.getProperty("line.separator"));
         List<StockPrice> priceList = new ArrayList<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         for (int i = 0; i < strings.length; i++) {
             if (StringUtils.isNotEmpty(strings[i].trim())) {
-                String[] info = strings[i].split(" ");
-                StockPrice price = new StockPrice();
-                price.setDate(sdf.parse(info[0]));
-                price.setOpeningPrice(new BigDecimal(info[1]));
-                price.setHighestPrice(new BigDecimal(info[2]));
-                price.setClosingPrice(new BigDecimal(info[3]));
-                price.setLowestPrice(new BigDecimal(info[4]));
-                price.setTradingVolume(new BigDecimal(info[5]));
-                price.setAmount(new BigDecimal(info[6]));
+                StockPrice price = new StockPrice(strings[i]);
                 priceList.add(price);
             }
         }
@@ -81,8 +71,7 @@ public class FileStockDataServiceImpl implements StockDataService {
         return getStockPriceList(priceList, startDate, endDate);
     }
 
-    @Override
-    public List<StockPrice> getStockPriceList(List<StockPrice> priceList, Calendar startDate, Calendar endDate) {
+    private List<StockPrice> getStockPriceList(List<StockPrice> priceList, Calendar startDate, Calendar endDate) {
         List<StockPrice> rstList = new ArrayList<>();
         DateTime start = new DateTime(endDate.getTimeInMillis());
         DateTime end = new DateTime(startDate.getTimeInMillis());
@@ -94,11 +83,6 @@ public class FileStockDataServiceImpl implements StockDataService {
             }
         }
         return rstList;
-    }
-
-    @Override
-    public void storeStockPriceData(List<StockPrice> priceList) {
-
     }
 
     private List<Stock> getStockList(ListingSpot spot, String path, int codeCell, int dateCell) throws ParseException, IOException {

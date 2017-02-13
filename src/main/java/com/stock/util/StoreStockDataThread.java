@@ -1,9 +1,7 @@
-package com.stock;
+package com.stock.util;
 
 import com.stock.bean.Stock;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.Calendar;
 import java.util.List;
 
@@ -26,14 +24,14 @@ public class StoreStockDataThread implements Runnable {
 
     @Override
     public void run() {
-        for (Stock stock : stockList) {
-            try {
-                StockDateUtil.storeData(stock, directory, startDate, append);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-        }
+//        for (Stock stock : stockList) {
+//            try {
+//                StockDateUtil.storeData(stock, directory, startDate, append);
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            } catch (ParseException e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 }

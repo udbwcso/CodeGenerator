@@ -10,9 +10,9 @@ import java.util.Calendar;
 import java.util.List;
 
 /**
- * Created by Administrator on 2017/1/22.
+ * Created by Administrator on 2017/2/13.
  */
-public interface StockDataService {
+public interface StockDataReader {
 
     List<Stock> getStockList() throws IOException, ParseException;
 
@@ -32,7 +32,4 @@ public interface StockDataService {
      */
     List<StockPrice> getStockPriceList(Stock stock, Calendar startDate, Calendar endDate) throws IOException, ParseException;
 
-    List<StockPrice> getStockPriceList(List<StockPrice> priceList, Calendar startDate, Calendar endDate);
-
-    void storeStockPriceData(List<StockPrice> priceList);
 }

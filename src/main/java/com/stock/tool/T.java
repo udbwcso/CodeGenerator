@@ -1,10 +1,10 @@
-package com.stock.util;
+package com.stock.tool;
 
-import com.stock.StockDateUtil;
 import com.stock.bean.ListingSpot;
 import com.stock.bean.Stock;
-import com.stock.service.FileStockDataServiceImpl;
-import com.stock.service.StockDataService;
+import com.stock.service.StockDataFileReader;
+import com.stock.service.StockDataReader;
+import com.stock.util.HttpStockDateUtil;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -26,7 +26,7 @@ public class T {
 
         String shDataDirectory = "D:\\stock_2_2\\sh";
         String szDataDirectory = "D:\\stock_1_2\\sz";
-        StockDataService stockDataService = new FileStockDataServiceImpl();
+        StockDataReader stockDataService = new StockDataFileReader();
         List<Stock> shStockList = stockDataService.getStockList(ListingSpot.SH);
         List<Stock> szStockList = stockDataService.getStockList(ListingSpot.SZ);
         List<Stock> newList = new ArrayList<>();
@@ -39,6 +39,6 @@ public class T {
         Calendar calendar = Calendar.getInstance();
         calendar.set(2000, 0, 0);
 //        StockUtil.storeData(shStockList, shDataDirectory, calendar, false);
-        StockDateUtil.storeData(newList, shDataDirectory, calendar, false);
+        HttpStockDateUtil.storeData(newList, shDataDirectory, calendar, false);
     }
 }

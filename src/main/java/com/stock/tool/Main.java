@@ -1,8 +1,12 @@
-package com.stock.service;
+package com.stock.tool;
 
 import com.stock.bean.ListingSpot;
 import com.stock.bean.Stock;
 import com.stock.bean.StockPrice;
+import com.stock.service.CalculateService;
+import com.stock.service.CalculateServiceImpl;
+import com.stock.service.StockDataFileReader;
+import com.stock.service.StockDataReader;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -16,7 +20,7 @@ import java.util.List;
  */
 public class Main {
     public static void main(String[] args) throws IOException, ParseException {
-        StockDataService stockDataService = new FileStockDataServiceImpl();
+        StockDataReader stockDataService = new StockDataFileReader();
         List<Stock> stockList = stockDataService.getStockList(ListingSpot.SZ);
         for (int i = 0; i < stockList.size(); i++) {
             Stock stock = stockList.get(i);

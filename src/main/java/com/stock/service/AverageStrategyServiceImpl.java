@@ -17,7 +17,7 @@ public class AverageStrategyServiceImpl implements StrategyService {
 
     @Override
     public void test(Stock stock) throws IOException, ParseException {
-        StockDataService stockDataService = new FileStockDataServiceImpl();
+        StockDataReader stockDataService = new StockDataFileReader();
         List<StockPrice> priceList = stockDataService.getStockPriceList(stock);
         CalculateService calculateService = new CalculateServiceImpl();
         Integer[] days = new Integer[]{5, 10, 20, 30};
