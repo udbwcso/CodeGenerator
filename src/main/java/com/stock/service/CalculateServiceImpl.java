@@ -24,11 +24,6 @@ public class CalculateServiceImpl implements CalculateService{
     }
 
     @Override
-    public BigDecimal getMovingAverage(BigDecimal[] numbers, int fast, int slow, int standard) {
-        return null;
-    }
-
-    @Override
     public List<StockPrice> average(List<StockPrice> priceList, Integer[] counts, int scale) {
         for (int i = 0; i < priceList.size() - counts[counts.length - 1]; i++) {
             StockPrice price = priceList.get(i);

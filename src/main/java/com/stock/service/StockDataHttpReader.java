@@ -1,6 +1,5 @@
 package com.stock.service;
 
-import com.stock.bean.ListingSpot;
 import com.stock.bean.Stock;
 import com.stock.bean.StockPrice;
 import org.apache.commons.io.FileUtils;
@@ -22,21 +21,13 @@ import java.util.List;
 /**
  * Created by Administrator on 2017/2/13.
  */
-public class StockDataHttpReader implements StockDataReader {
-
-    @Override
-    public List<Stock> getStockList() throws IOException, ParseException {
-        return null;
-    }
-
-    @Override
-    public List<Stock> getStockList(ListingSpot spot) throws IOException, ParseException {
-        return null;
-    }
+public class StockDataHttpReader extends AbstractStockDataReader implements StockDataReader {
 
     @Override
     public List<StockPrice> getStockPriceList(Stock stock) throws IOException, ParseException {
-        return null;
+        Calendar startDate = Calendar.getInstance();
+        startDate.setTime(stock.getListingDate());
+        return getStockPriceList(stock, startDate, Calendar.getInstance());
     }
 
     @Override

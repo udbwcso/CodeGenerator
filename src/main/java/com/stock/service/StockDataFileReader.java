@@ -1,7 +1,5 @@
 package com.stock.service;
 
-import com.office.ExcelReader;
-import com.stock.bean.ListingSpot;
 import com.stock.bean.Stock;
 import com.stock.bean.StockPrice;
 import org.apache.commons.io.FileUtils;
@@ -11,7 +9,6 @@ import org.joda.time.DateTime;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -20,34 +17,20 @@ import java.util.List;
 /**
  * Created by Administrator on 2017/2/13.
  */
-public class StockDataFileReader implements StockDataReader {
+public class StockDataFileReader extends AbstractStockDataReader implements StockDataReader {
 
-    private static final String szPath = "E:\\stock\\A\\深圳A股列表.xlsx";
-    private static final String shPath = "E:\\stock\\A\\上海A股.xlsx";
-    private static final String stockPath = "D:\\stock";
+    private static String STOCK_PATH = "E:\\stock";
 
-
-    @Override
-    public List<Stock> getStockList() throws IOException, ParseException {
-        List<Stock> list = new ArrayList<>();
-        list.addAll(getStockList(ListingSpot.SH, shPath, 2, 4));
-        list.addAll(getStockList(ListingSpot.SZ, szPath, 5, 7));
-        return list;
+    public StockDataFileReader() {
     }
 
-    @Override
-    public List<Stock> getStockList(ListingSpot spot) throws IOException, ParseException {
-        if(spot.equals(ListingSpot.SH)) {
-            return getStockList(spot, shPath, 2, 4);
-        } else if(spot.equals(ListingSpot.SZ)) {
-            return getStockList(spot, szPath, 5, 7);
-        }
-        return Collections.emptyList();
+    public StockDataFileReader(String path) {
+        STOCK_PATH = path;
     }
 
     @Override
     public List<StockPrice> getStockPriceList(Stock stock) throws IOException, ParseException {
-        String path = stockPath + File.separator + stock.getSpot().getKey()
+        String path = STOCK_PATH + File.separator + stock.getSpot().getKey()
                 + File.separator + stock.getCode() + ".txt";
         File file = new File(path);
         if(!file.exists()) {
@@ -83,20 +66,5 @@ public class StockDataFileReader implements StockDataReader {
             }
         }
         return rstList;
-    }
-
-    private List<Stock> getStockList(ListingSpot spot, String path, int codeCell, int dateCell) throws ParseException, IOException {
-        List<String[]> list = ExcelReader.read(path);
-        List<Stock> stockList = new ArrayList<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        for (int i = 1; i < list.size(); i++) {
-            String[] strings = list.get(i);
-            Stock stock = new Stock();
-            stock.setCode(strings[codeCell]);
-            stock.setListingDate(sdf.parse(strings[dateCell]));
-            stock.setSpot(spot);
-            stockList.add(stock);
-        }
-        return stockList;
     }
 }

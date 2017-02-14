@@ -17,15 +17,5 @@ public interface CalculateService {
      */
     BigDecimal getAverage(BigDecimal[] numbers, int count, int scale);
 
-    /**
-     * 移动平均值
-     * @param numbers
-     * @param fast
-     * @param slow
-     * @param standard
-     * @return
-     */
-    BigDecimal getMovingAverage(BigDecimal[] numbers, int fast, int slow, int standard);
-
     List<StockPrice> average(List<StockPrice> priceList, Integer[] counts, int scale);
 }
