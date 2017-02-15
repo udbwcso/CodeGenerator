@@ -26,6 +26,7 @@ public class StockDataFileWriter implements StockDataWriter {
             rst.append(price.toString()).append(lineSeparator);
         }
         File file = new File(filePath);
+        System.out.println(stock.getCode() + "----" + list.size());
         FileUtils.writeStringToFile(file, rst.toString(), append);
     }
 }

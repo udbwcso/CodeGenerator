@@ -28,12 +28,12 @@ public class Main {
             priceList.addAll(stockDataService.getStockPriceList(stock));
 
             CalculateService calculateService = new CalculateServiceImpl();
-            Integer[] days = new Integer[]{5, 10, 20, 30};
+            Integer[] days = new Integer[]{5, 10, 20, 30, 60};
             if (priceList.size() < days[days.length - 1] + days[0]) {
                 continue;
             }
             calculateService.average(priceList, days, 3);
-            for (int j = 0; j < 5; j++) {
+            for (int j = 0; j < 3; j++) {
                 StockPrice price = priceList.get(j);
                 BigDecimal[] result = new BigDecimal[days.length];
                 for (int k = 0; k < days.length; k++) {
@@ -47,7 +47,7 @@ public class Main {
                         ++cnt;
                     }
                 }
-                if (cnt >= days.length - 1) {
+                if (cnt >= days.length - 2) {
                     for (BigDecimal average : result) {
                         System.out.print(average + " ");
                     }

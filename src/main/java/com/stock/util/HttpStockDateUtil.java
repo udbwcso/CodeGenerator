@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -52,16 +51,16 @@ public class HttpStockDateUtil {
      * @param append 写文件时是否是追加
      */
     public static void storeData(List<Stock> stockList, String directory, Calendar startDate, boolean append) {
-        List<Stock> list = new ArrayList<>();
-        for (int i = 0; i < stockList.size(); i++) {
-            list.add(stockList.get(i));
-            if((i + 1) % 200 == 0 || i == stockList.size() - 1) {
-                StoreStockDataThread stockData = new StoreStockDataThread(list, directory, startDate, append);
-                Thread thread = new Thread(stockData);
-                thread.start();
-                list = new ArrayList<>();
-            }
-        }
+//        List<Stock> list = new ArrayList<>();
+//        for (int i = 0; i < stockList.size(); i++) {
+//            list.add(stockList.get(i));
+//            if((i + 1) % 200 == 0 || i == stockList.size() - 1) {
+//                StoreStockDataThread stockData = new StoreStockDataThread(list, directory, startDate, append);
+//                Thread thread = new Thread(stockData);
+//                thread.start();
+//                list = new ArrayList<>();
+//            }
+//        }
     }
 
     public static String getCurrentData(String code, String address) throws IOException {
