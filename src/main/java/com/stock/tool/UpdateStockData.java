@@ -10,24 +10,35 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
  * Created by Administrator on 2017/2/14.
  */
-public class UpdateStockDate {
+public class UpdateStockData {
     public static void main(String[] args) throws IOException, ParseException {
-        StockDataReader fileReader = new StockDataFileReader("E:\\stock");
+        String dataPath = "E:\\stock";
+        StockDataReader fileReader = new StockDataFileReader(dataPath);
         List<Stock> stockList = fileReader.getStockList();
         Calendar startDate = Calendar.getInstance();
         startDate.set(2017, 1, 8);
         Calendar endDate = Calendar.getInstance();
-        new UpdateStockDate().storeDate(startDate, endDate, stockList);
+        UpdateStockData stockData = new UpdateStockData();
+        stockData.storeData(startDate, endDate, stockList);
+//        stockData.backUpHistoryData(dataPath);
     }
 
-    public void storeDate(Calendar startDate, Calendar endDate, List<Stock> stockList) {
+    public void backUpHistoryData(String path) throws IOException {
+        FileUtils.deleteDirectory(new File("E:\\stock back up\\stock"));
+        String backUpDirectory = "E:\\stock back up\\" + new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        FileUtils.moveDirectory(new File(path), new File(backUpDirectory));
+    }
+
+    public void storeData(Calendar startDate, Calendar endDate, List<Stock> stockList) {
         List<Stock> list = new ArrayList<>();
         for (int i = 0; i < stockList.size(); i++) {
             list.add(stockList.get(i));

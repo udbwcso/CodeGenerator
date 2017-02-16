@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class StockDataFileReader extends AbstractStockDataReader implements StockDataReader {
 
-    private static String STOCK_PATH = "E:\\stock_1";
+    private static String STOCK_PATH = "E:\\stock";
 
     public StockDataFileReader() {
     }
