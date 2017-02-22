@@ -1,4 +1,4 @@
-package com.stock.service;
+package com.stock.strategy;
 
 import com.stock.bean.Stock;
 

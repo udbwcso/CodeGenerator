@@ -18,14 +18,13 @@ import java.util.List;
  * Created by Administrator on 2017/1/22.
  * 找出平均值收敛的数据
  */
-public class ChooseStock {
+public class ChooseAverageConvergenceStock {
     public static void main(String[] args) throws IOException, ParseException {
         StockDataReader stockDataService = new StockDataFileReader();
         List<Stock> stockList = stockDataService.getStockList(ListingSpot.SZ);
         for (int i = 0; i < stockList.size(); i++) {
             Stock stock = stockList.get(i);
             List<StockPrice> priceList = stockDataService.getStockPriceList(stock);
-            priceList.addAll(stockDataService.getStockPriceList(stock));
 
             CalculateService calculateService = new CalculateServiceImpl();
             Integer[] days = new Integer[]{5, 10, 20, 30, 60};

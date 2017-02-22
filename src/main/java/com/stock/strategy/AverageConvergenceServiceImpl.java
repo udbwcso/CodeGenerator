@@ -1,7 +1,11 @@
-package com.stock.service;
+package com.stock.strategy;
 
 import com.stock.bean.Stock;
 import com.stock.bean.StockPrice;
+import com.stock.service.CalculateService;
+import com.stock.service.CalculateServiceImpl;
+import com.stock.service.StockDataFileReader;
+import com.stock.service.StockDataReader;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -12,8 +16,9 @@ import java.util.List;
 
 /**
  * Created by Administrator on 2017/1/23.
+ * 均线收敛
  */
-public class AverageStrategyServiceImpl implements StrategyService {
+public class AverageConvergenceServiceImpl implements StrategyService {
 
     @Override
     public void test(Stock stock) throws IOException, ParseException {
@@ -41,9 +46,9 @@ public class AverageStrategyServiceImpl implements StrategyService {
             }
             if (cnt >= days.length - 1) {
 //                keyPointList.add(nextDayPrice);
-                //均线收敛后观察15天后续走势
+                //均线收敛后观察5天后续走势
                 int divergentDays = 0;//连续发散天数
-                for (int j = 1; j < 15; j++) {
+                for (int j = 1; j < 5; j++) {
                     int divergentCnt = 0;
                     --i;
                     StockPrice latestPrice = priceList.get(i);
@@ -100,16 +105,16 @@ public class AverageStrategyServiceImpl implements StrategyService {
             }
             if(positions > 0 && price.getAverage().get(days[0]).compareTo(price.getAverage().get(days[2])) == -1) {
                 //sell
-                BigDecimal sell = price.getLowestPrice().multiply(new BigDecimal(positions));
+                BigDecimal sell = price.getClosingPrice().multiply(new BigDecimal(positions));
                 initMoney = initMoney.add(sell).subtract(sell.multiply(new BigDecimal("0.003")));
                 positions = 0;
                 positionsMoney = BigDecimal.ZERO;
                 System.out.println("sell" + "--" + sdf.format(price.getDate()) + "--" + positions + "--" + initMoney.toString());
                 System.out.println(lossPercent.toString());
             }
-            if(positions > 100 && lossPercent.abs().compareTo(new BigDecimal(0.06)) >= 0) {
+            if(positions > 100 && lossPercent.abs().compareTo(new BigDecimal(0.04)) >= 0) {
                 //sell
-                BigDecimal sell = price.getLowestPrice().multiply(new BigDecimal(100));
+                BigDecimal sell = price.getClosingPrice().multiply(new BigDecimal(100));
                 initMoney = initMoney.add(sell).subtract(sell.multiply(new BigDecimal("0.003")));
                 positions = positions - 100;
                 positionsMoney = positionsMoney.subtract(sell);
@@ -117,7 +122,7 @@ public class AverageStrategyServiceImpl implements StrategyService {
                 System.out.println(lossPercent.toString());
             }
         }
-        System.out.println(initMoney.toString() + "--" + positionsMoney.toString());
+        System.out.println(initMoney.toString() + "--" + positionsMoney.toString() + "--" + initMoney.add(positionsMoney).toString());
         System.out.println(positions);
     }
 }
