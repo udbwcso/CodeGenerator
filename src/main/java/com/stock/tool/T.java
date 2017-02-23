@@ -4,7 +4,6 @@ import com.stock.bean.ListingSpot;
 import com.stock.bean.Stock;
 import com.stock.service.StockDataFileReader;
 import com.stock.service.StockDataReader;
-import com.stock.util.HttpStockDateUtil;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -39,6 +38,6 @@ public class T {
         Calendar calendar = Calendar.getInstance();
         calendar.set(2000, 0, 0);
 //        StockUtil.storeData(shStockList, shDataDirectory, calendar, false);
-        HttpStockDateUtil.storeData(newList, shDataDirectory, calendar, false);
+//        HttpStockDateUtil.storeData(newList, shDataDirectory, calendar, false);
     }
 }

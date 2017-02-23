@@ -34,7 +34,8 @@ public class ChooseContinuousRiseStock {
             for (int j = 0; j < riseDay; j++) {
                 StockPrice current = priceList.get(j);
                 StockPrice before = priceList.get(j + 1);
-                if(current.getClosingPrice().compareTo(before.getClosingPrice()) >= 0
+                if(current.getOpeningPrice().compareTo(before.getOpeningPrice()) >= 0
+                        && current.getClosingPrice().compareTo(before.getClosingPrice()) >= 0
                         && current.getHighestPrice().compareTo(before.getHighestPrice()) >= 0
                         && current.getLowestPrice().compareTo(before.getLowestPrice()) >= 0) {
                     ++count;
