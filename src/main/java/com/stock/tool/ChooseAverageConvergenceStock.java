@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -39,6 +40,7 @@ public class ChooseAverageConvergenceStock {
                     result[k] = priceList.get(j).getAverage().get(days[k]);
                 }
                 int cnt = 0;
+                Arrays.sort(result);
                 for (int k = 0; k < result.length; k++) {
                     BigDecimal sub = result[k].subtract(result[0]).abs();
                     BigDecimal deviate = sub.divide(priceList.get(0).getClosingPrice(), 6, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));

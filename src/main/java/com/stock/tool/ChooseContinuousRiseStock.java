@@ -37,7 +37,9 @@ public class ChooseContinuousRiseStock {
                 if(current.getOpeningPrice().compareTo(before.getOpeningPrice()) >= 0
                         && current.getClosingPrice().compareTo(before.getClosingPrice()) >= 0
                         && current.getHighestPrice().compareTo(before.getHighestPrice()) >= 0
-                        && current.getLowestPrice().compareTo(before.getLowestPrice()) >= 0) {
+                        && current.getLowestPrice().compareTo(before.getLowestPrice()) >= 0
+                        && current.getTradingVolume().compareTo(current.getTradingVolume()) >= 0
+                        && current.getClosingPrice().compareTo(current.getOpeningPrice()) >= 0) {
                     ++count;
                 }
             }

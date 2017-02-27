@@ -25,7 +25,7 @@ public class UpdateStockData {
         StockDataReader fileReader = new StockDataFileReader(dataPath);
         List<Stock> stockList = fileReader.getStockList();
         Calendar startDate = Calendar.getInstance();
-        startDate.set(2017, 1, 21);
+        startDate.set(2017, 1, 24);
         Calendar endDate = Calendar.getInstance();
         UpdateStockData stockData = new UpdateStockData();
         stockData.storeData(startDate, endDate, stockList);
