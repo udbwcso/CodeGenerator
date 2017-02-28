@@ -35,6 +35,12 @@ public class ChooseStock {
 
     }
 
+    /**
+     * 持续上涨
+     * @return
+     * @throws IOException
+     * @throws ParseException
+     */
     public static List<String> continuousRise() throws IOException, ParseException {
         StockDataReader stockDataService = new StockDataFileReader();
         List<Stock> stockList = stockDataService.getStockList(ListingSpot.SZ);
@@ -42,13 +48,6 @@ public class ChooseStock {
         for (int i = 0; i < stockList.size(); i++) {
             Stock stock = stockList.get(i);
             List<StockPrice> priceList = stockDataService.getStockPriceList(stock);
-
-            CalculateService calculateService = new CalculateServiceImpl();
-            Integer[] days = new Integer[]{5, 10, 20, 30, 60};
-            if (priceList.size() < days[days.length - 1] + days[0]) {
-                continue;
-            }
-            calculateService.average(priceList, days, 3);
             int riseDay = 2;
             int count = 0;
             for (int j = 0; j < riseDay; j++) {
@@ -71,6 +70,12 @@ public class ChooseStock {
         return rstList;
     }
 
+    /**
+     * 均线收敛
+     * @return
+     * @throws IOException
+     * @throws ParseException
+     */
     public static List<String> averageConvergence() throws IOException, ParseException {
         StockDataReader stockDataService = new StockDataFileReader();
         List<Stock> stockList = stockDataService.getStockList(ListingSpot.SZ);
