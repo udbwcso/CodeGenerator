@@ -30,15 +30,23 @@ public class UpdateStockData {
         StockDataReader fileReader = new StockDataFileReader(OLD_STOCK_DATA_PATH);
         List<Stock> stockList = fileReader.getStockList();
         Calendar startDate = Calendar.getInstance();
-        startDate.set(2017, 1, 21);
+        startDate.set(2017, 1, 28);
         Calendar endDate = Calendar.getInstance();
-        stockData.storeData(startDate, endDate, stockList);
+        List<Thread> threadList = stockData.storeData(startDate, endDate, stockList);
 
+        while (threadList.size() > 0) {
+            if(!threadList.get(0).isAlive()) {
+                threadList.remove(0);
+            }
+        }
         stockData.correction(startDate, endDate);
     }
 
     public static void prepare() throws IOException {
-        FileUtils.deleteDirectory(new File(NEW_STOCK_DATA_PATH));
+        File newDataDir = new File(NEW_STOCK_DATA_PATH);
+        if(newDataDir.exists()) {
+            FileUtils.deleteDirectory(newDataDir);
+        }
         File errorFile = new File(ERROR_FILE_PATH);
         if(errorFile.exists()) {
             FileUtils.forceDelete(errorFile);
@@ -47,6 +55,9 @@ public class UpdateStockData {
 
     public void correction(Calendar startDate, Calendar endDate) throws IOException, ParseException {
         String code = FileUtils.readFileToString(new File(ERROR_FILE_PATH), "UTF-8");
+        System.out.println("-------------------------");
+        System.out.println(code);
+        System.out.println("-------------------------");
         String[] codes = code.split(",");
         Set<String> set = new HashSet<>();
         for (int i = 0; i < codes.length; i++) {
@@ -76,17 +87,20 @@ public class UpdateStockData {
         return true;
     }
 
-    public void storeData(Calendar startDate, Calendar endDate, List<Stock> stockList) {
+    public List<Thread> storeData(Calendar startDate, Calendar endDate, List<Stock> stockList) {
         List<Stock> list = new ArrayList<>();
+        List<Thread> threadList = new ArrayList<>();
         for (int i = 0; i < stockList.size(); i++) {
             list.add(stockList.get(i));
             if((i + 1) % 50 == 0 || i == stockList.size() - 1) {
                 StoreStockDataThread stockData = new StoreStockDataThread(startDate, endDate, list);
                 Thread thread = new Thread(stockData);
                 thread.start();
+                threadList.add(thread);
                 list = new ArrayList<>();
             }
         }
+        return threadList;
     }
 
     private class StoreStockDataThread implements Runnable{
