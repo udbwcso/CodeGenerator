@@ -10,12 +10,19 @@ import java.util.List;
  */
 public interface CalculateService {
     /**
-     * 平均值
+     * 计算平均值
      * @param numbers
      * @param count
      * @return
      */
     BigDecimal getAverage(BigDecimal[] numbers, int count, int scale);
 
+    /**
+     * 批量计算平均值
+     * @param priceList
+     * @param counts
+     * @param scale
+     * @return
+     */
     List<StockPrice> average(List<StockPrice> priceList, Integer[] counts, int scale);
 }
