@@ -1,6 +1,5 @@
 package com.stock.tool;
 
-import com.stock.bean.ListingSpot;
 import com.stock.bean.Stock;
 import com.stock.bean.StockPrice;
 import com.stock.service.CalculateService;
@@ -22,7 +21,7 @@ import java.util.List;
 public class ChooseAverageConvergenceStock {
     public static void main(String[] args) throws IOException, ParseException {
         StockDataReader stockDataService = new StockDataFileReader();
-        List<Stock> stockList = stockDataService.getStockList(ListingSpot.SZ);
+        List<Stock> stockList = stockDataService.getStockList();
         for (int i = 0; i < stockList.size(); i++) {
             Stock stock = stockList.get(i);
             List<StockPrice> priceList = stockDataService.getStockPriceList(stock);
