@@ -39,8 +39,8 @@ public class PriceStrategyServiceImpl implements StrategyService {
             if(cnt == days - 1) {
                 BigDecimal buyMoney = current.getClosingPrice().multiply(buyCount);
                 BigDecimal sellMoney = tomorrow.getClosingPrice().multiply(buyCount);
-                init = init.subtract(buyMoney).subtract(buyMoney.multiply(new BigDecimal(0.005)));
-                init = init.add(sellMoney).subtract(sellMoney.multiply(new BigDecimal(0.005)));
+                init = init.subtract(buyMoney).subtract(buyMoney.multiply(new BigDecimal("0.005")));
+                init = init.add(sellMoney).subtract(sellMoney.multiply(new BigDecimal("0.005")));
                 System.out.println(init.toString());
             }
         }

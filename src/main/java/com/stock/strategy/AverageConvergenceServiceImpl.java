@@ -112,7 +112,7 @@ public class AverageConvergenceServiceImpl implements StrategyService {
                 System.out.println("sell" + "--" + sdf.format(price.getDate()) + "--" + positions + "--" + initMoney.toString());
                 System.out.println(lossPercent.toString());
             }
-            if(positions > 100 && lossPercent.abs().compareTo(new BigDecimal(0.04)) >= 0) {
+            if(positions > 100 && lossPercent.abs().compareTo(new BigDecimal("0.04")) >= 0) {
                 //sell
                 BigDecimal sell = price.getClosingPrice().multiply(new BigDecimal(100));
                 initMoney = initMoney.add(sell).subtract(sell.multiply(new BigDecimal("0.003")));

@@ -36,7 +36,7 @@ public class AverageServiceImpl implements StrategyService {
                     && yesterday.getAverage().get(day).compareTo(today.getAverage().get(day)) < 0) {
                 //buy
                 BigDecimal fee = today.getClosingPrice().multiply(buyCount);
-                BigDecimal charge = fee.multiply(new BigDecimal(0.005));
+                BigDecimal charge = fee.multiply(new BigDecimal("0.005"));
                 initMoney = initMoney.subtract(fee).subtract(charge);
                 System.out.println("buy----" + sdf.format(today.getDate()) + "----" + today.getClosingPrice().toString());
                 //sell
@@ -46,7 +46,7 @@ public class AverageServiceImpl implements StrategyService {
                     today = priceList.get(i);
                 } while (today.getLowestPrice().compareTo(yesterday.getLowestPrice()) > 0);
                 fee = today.getClosingPrice().multiply(buyCount);
-                charge = fee.multiply(new BigDecimal(0.005));
+                charge = fee.multiply(new BigDecimal("0.005"));
                 initMoney = initMoney.add(fee).subtract(charge);
                 System.out.println("sell----" + sdf.format(today.getDate()) + "----" + today.getClosingPrice().toString());
             }

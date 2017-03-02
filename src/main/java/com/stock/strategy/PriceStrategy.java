@@ -52,7 +52,7 @@ public class PriceStrategy {
             Map<Integer, BigDecimal> averageMap = priceList.get(i + 1).getAverage();
             BigDecimal[] averages = averageMap.values().toArray(new BigDecimal[0]);
             if (StockPriceUtil.isContinuousRise(2, risePriceList)
-                    && StockPriceUtil.isConvergent(averages, new BigDecimal(0.3))) {
+                    && StockPriceUtil.isConvergent(averages, new BigDecimal("0.3"))) {
                 //buy
                 BigDecimal openBuyMoney = current.getOpeningPrice().multiply(buyCount);
                 BigDecimal closeBuyMoney = current.getClosingPrice().multiply(buyCount);
