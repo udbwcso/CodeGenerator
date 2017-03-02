@@ -1,9 +1,7 @@
-package com.stock.tool;
+package com.stock.strategy;
 
 import com.stock.bean.ListingSpot;
 import com.stock.bean.Stock;
-import com.stock.strategy.AverageConvergenceServiceImpl;
-import com.stock.strategy.StrategyService;
 
 import java.io.IOException;
 import java.text.ParseException;

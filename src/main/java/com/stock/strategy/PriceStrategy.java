@@ -1,4 +1,4 @@
-package com.stock.tool;
+package com.stock.strategy;
 
 import com.stock.bean.ListingSpot;
 import com.stock.bean.Stock;

@@ -1,6 +1,5 @@
 package com.stock.tool;
 
-import com.stock.bean.ListingSpot;
 import com.stock.bean.Stock;
 import com.stock.bean.StockPrice;
 import com.stock.service.StockDataFileReader;
@@ -15,6 +14,7 @@ import java.util.*;
 
 /**
  * Created by Administrator on 2017/2/14.
+ * 更新数据
  */
 public class UpdateStockData {
 
@@ -29,20 +29,47 @@ public class UpdateStockData {
 
         StockDataReader fileReader = new StockDataFileReader(OLD_STOCK_DATA_PATH);
         List<Stock> stockList = fileReader.getStockList();
+        stockData.getStartDate(stockList);
         Calendar startDate = Calendar.getInstance();
         startDate.set(2017, 1, 28);
         Calendar endDate = Calendar.getInstance();
-        List<Thread> threadList = stockData.storeData(startDate, endDate, stockList);
 
+        List<Thread> threadList = stockData.storeData(startDate, endDate, stockList);
         while (threadList.size() > 0) {
             if(!threadList.get(0).isAlive()) {
                 threadList.remove(0);
             }
         }
-        stockData.correction(startDate, endDate);
+        System.out.println("===========" + stockData.correction(startDate, endDate) + "==========");
     }
 
-    public static void prepare() throws IOException {
+    public void getStartDate(List<Stock> stockList) throws IOException {
+        Map<String, Integer> dateMap = new HashMap<>();
+        for (int i = 0; i < stockList.size(); i++) {
+            Stock stock = stockList.get(i);
+            String path = OLD_STOCK_DATA_PATH + File.separator + stock.getSpot().getKey()
+                    + File.separator + stock.getCode() + ".txt";
+            File file = new File(path);
+            String price = FileUtils.readLines(file, "UTF-8").get(0);
+            String date = price.split(" ")[0];
+            if(dateMap.get(date) == null) {
+                System.out.println(date + "----" + stock.getCode());
+                dateMap.put(date, 1);
+            } else {
+                dateMap.put(date, dateMap.get(date) + 1);
+            }
+        }
+        for (Map.Entry<String, Integer> entry : dateMap.entrySet()) {
+            System.out.println(entry.getKey() + "----" + entry.getValue());
+        }
+    }
+
+    /**
+     * 更新数据前的准备工作
+     * 删除上次更新时生成的数据文件和错误信息文件
+     * @throws IOException
+     */
+    public void prepare() throws IOException {
         File newDataDir = new File(NEW_STOCK_DATA_PATH);
         if(newDataDir.exists()) {
             FileUtils.deleteDirectory(newDataDir);
@@ -53,34 +80,45 @@ public class UpdateStockData {
         }
     }
 
-    public void correction(Calendar startDate, Calendar endDate) throws IOException, ParseException {
-        String code = FileUtils.readFileToString(new File(ERROR_FILE_PATH), "UTF-8");
-        System.out.println("-------------------------");
-        System.out.println(code);
-        System.out.println("-------------------------");
-        String[] codes = code.split(",");
+    /**
+     * 更新数据更新过程种由于网络原因未完成更新的数据
+     * @param startDate 开始时间
+     * @param endDate 结果时间
+     * @return
+     * @throws IOException
+     * @throws ParseException
+     */
+    public boolean correction(Calendar startDate, Calendar endDate) throws IOException, ParseException {
+        File errorFile = new File(ERROR_FILE_PATH);
+        int count = 0;
+        do {
+            String code = FileUtils.readFileToString(errorFile, "UTF-8");
+            FileUtils.forceDelete(errorFile);
+            System.out.println("-------------------------");
+            System.out.println(code);
+            System.out.println("-------------------------");
+            String[] codes = code.split(",");
+            correction(startDate, endDate, codes);
+            errorFile = new File(ERROR_FILE_PATH);
+            ++count;
+        } while (errorFile.exists() && count < 10);
+        return errorFile.exists();
+    }
+
+    private void correction(Calendar startDate, Calendar endDate, String[] codes) throws IOException, ParseException {
         Set<String> set = new HashSet<>();
         for (int i = 0; i < codes.length; i++) {
             set.add(codes[i]);
         }
         StockDataReader stockDataService = new StockDataFileReader();
-        List<Stock> shStockList = stockDataService.getStockList(ListingSpot.SH);
-        List<Stock> szStockList = stockDataService.getStockList(ListingSpot.SZ);
-        List<Stock> shNewList = new ArrayList<>();
-        List<Stock> szNewList = new ArrayList<>();
-        System.out.println(set.size());
-        for (int i = 0; i < shStockList.size(); i++) {
-            if(set.contains(shStockList.get(i).getCode())) {
-                shNewList.add(shStockList.get(i));
+        List<Stock> stockList = stockDataService.getStockList();
+        List<Stock> newList = new ArrayList<>();
+        for (int i = 0; i < stockList.size(); i++) {
+            if(set.contains(stockList.get(i).getCode())) {
+                newList.add(stockList.get(i));
             }
         }
-        for (int i = 0; i < szStockList.size(); i++) {
-            if(set.contains(szStockList.get(i).getCode())) {
-                szNewList.add(szStockList.get(i));
-            }
-        }
-        storeData(startDate, endDate, szNewList);
-        storeData(startDate, endDate, shNewList);
+        storeData(startDate, endDate, newList);
     }
 
     public boolean check() {
@@ -119,18 +157,19 @@ public class UpdateStockData {
             StockDataReader httpReader = new StockDataHttpReader();
             for (int i = 0; i < stockList.size(); i++) {
                 Stock stock = stockList.get(i);
-                List<StockPrice> priceList = null;
+                List<StockPrice> priceList;
                 try {
                     priceList = httpReader.getStockPriceList(stock, startDate, endDate);
                     StringBuilder sb = new StringBuilder("");
                     for (int j = 0; j < priceList.size(); j++) {
                         sb.append(priceList.get(j).toString()).append(System.getProperty("line.separator"));
                     }
+                    System.out.println(sb);
                     sb.append(getHistoryDate(stock));
                     String fileName = File.separator + stock.getSpot().getKey() + File.separator + stock.getCode() + ".txt";
                     String filePath = NEW_STOCK_DATA_PATH + File.separator + fileName;
                     File file = new File(filePath);
-                    System.out.println(stock.getCode());
+//                    System.out.println(stock.getCode());
                     FileUtils.writeStringToFile(file, sb.toString(), false);
                 } catch (Exception e) {
                     e.printStackTrace();
