@@ -20,6 +20,7 @@ public class EntityGenerator {
     public static Map<String, Object> getTableInfo(String catalog, String schemaPattern,
                                                    String tableName, String[] types) throws Exception {
         Properties typeProp = PropertiesUtil.load(Configuration.get("type"));
+        Properties jdbcTypeProp = PropertiesUtil.load(Configuration.get("jdbcType"));
 
         List<Map<String, Object>> tableList = TableUtil.getTables(catalog, schemaPattern, tableName, types);
         Map<String, Object> table = tableList.get(0);
@@ -31,6 +32,7 @@ public class EntityGenerator {
         for (Map<String, Object> column : columnList) {
             String typeName = String.valueOf(column.get("TYPE_NAME"));
             column.put("javaType", typeProp.getProperty(typeName.replaceAll(" ", "_")));
+            column.put("jdbcType", jdbcTypeProp.getProperty(typeName));
             String columnName = String.valueOf((column.get("COLUMN_NAME")));
             for (int i = 0; i < primaryKeyList.size(); i++) {
                 if (columnName.equals(primaryKeyList.get(i))) {
@@ -48,6 +50,7 @@ public class EntityGenerator {
         for (Map<String, Object> column : columnList) {
             String columnName = String.valueOf((column.get("COLUMN_NAME")));
             String field = WordUtil.camelCased(columnName, wordMap);
+            WordUtil.store(columnName, field);
             column.put("field", field);
             column.put("firstUpperCaseField", StringUtil.uppercase(field, 0, 1));
         }

@@ -1,7 +1,7 @@
 <mapper>
     <resultMap type="" id="${entity}">
     #foreach( $column in $columnList )
-        <result column="${column.COLUMN_NAME}" property="${column.field}" jdbcType="${column.TYPE_NAME}" />
+        <result column="${column.COLUMN_NAME}" property="${column.field}" jdbcType="${column.jdbcType}" />
     #end
     </resultMap>
 
@@ -22,7 +22,7 @@
                     #set($comma = ",")
                 #end
                 #set($columnNameString = "${columnNameString}${column.COLUMN_NAME}${comma}")
-                #set($columnValueString = "${columnValueString}#{${column.field},jdbcType=${column.TYPE_NAME}}${comma}")
+                #set($columnValueString = "${columnValueString}#{${column.field},jdbcType=${column.jdbcType}}${comma}")
             #end
         #end
         insert into $TABLE_NAME(${columnNameString})
@@ -35,7 +35,7 @@
         #foreach( $column in $columnList )
             #if(!${column.isPrimaryKey})
                 <if test="${column.field} != null">
-                    ${column.COLUMN_NAME}=#{${column.field},jdbcType=${column.TYPE_NAME}}#if(${velocityCount} != ${columnList.size()}),#end
+                    ${column.COLUMN_NAME}=#{${column.field},jdbcType=${column.jdbcType}}#if(${velocityCount} != ${columnList.size()}),#end
                 </if>
             #end
         #end
@@ -43,7 +43,7 @@
         where
         #foreach( $column in $columnList )
             #if(${column.isPrimaryKey})
-                ${column.COLUMN_NAME}=#{${column.field},jdbcType=${column.TYPE_NAME}}
+                ${column.COLUMN_NAME}=#{${column.field},jdbcType=${column.jdbcType}}
             #end
         #end
     </update>
@@ -71,7 +71,7 @@
         FROM $TABLE_NAME WHERE
         #foreach( $column in $columnList )
             #if(${column.isPrimaryKey})
-                ${column.COLUMN_NAME}=#{${column.field},jdbcType=${column.TYPE_NAME}}
+                ${column.COLUMN_NAME}=#{${column.field},jdbcType=${column.jdbcType}}
             #end
         #end
     </select>
@@ -80,7 +80,7 @@
         DELETE FROM $TABLE_NAME WHERE
         #foreach( $column in $columnList )
             #if(${column.isPrimaryKey})
-                ${column.COLUMN_NAME}=#{${column.field},jdbcType=${column.TYPE_NAME}}
+                ${column.COLUMN_NAME}=#{${column.field},jdbcType=${column.jdbcType}}
             #end
         #end
     </delete>

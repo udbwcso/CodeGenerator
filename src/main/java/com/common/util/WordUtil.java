@@ -196,4 +196,11 @@ public class WordUtil {
         }
         return camelCased;
     }
+
+    public static void store(String key, String value) throws IOException {
+        String wordPropPath = Configuration.get("wordPath");
+        Properties properties = new Properties();
+        properties.setProperty(key, value);
+        PropertiesUtil.store(properties, wordPropPath, true);
+    }
 }

@@ -173,6 +173,9 @@ public class StringUtil {
      * @return
      */
     public static String camelCased(String str, String separator) {
+        if(!str.contains(separator)) {
+            return str;
+        }
         str = str.toLowerCase();
         String[] words = str.split(separator);
         if(words.length <= 1){

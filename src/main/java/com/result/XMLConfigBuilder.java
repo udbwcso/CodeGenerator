@@ -1,7 +1,6 @@
 package com.result;
 
 import com.doc.XPathParser;
-import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -51,15 +50,85 @@ public class XMLConfigBuilder {
         user.setId(1L);
         child.setName("99");
         user.setChild(child);
-        System.out.println(new JSONObject(builder.toMap(user, "1")).toString());
+//        System.out.println(new JSONObject(builder.toMap(user, "1")).toString());
     }
 
     private Map<String, ResultMap> beanMap = new HashMap<>();
 
-    public <T> Map<String, Object> toMap(T bean, String templateId) throws IllegalAccessException, IntrospectionException, InvocationTargetException {
-        return toMap(bean, beanMap.get(templateId));
-    }
-
+//    public static <T> BeanMapInfo read(T bean, JSONObject jsonObject) throws IllegalAccessException, IntrospectionException,
+//            InvocationTargetException {
+//        Stack<BeanMapInfo> stack = new Stack<>();
+//        BeanMapInfo basicMap = toMap(bean, jsonObject);
+//        stack.push(basicMap);
+//        while (!stack.isEmpty()) {
+//            BeanMapInfo beanInfo = stack.peek();
+//            if (beanInfo.isFinish()) {
+//                stack.pop();
+//                continue;
+//            }
+//            Map<String, Object> value = beanInfo.getValue();
+//            Map<String, Object> objMap = beanInfo.getObjectMap();
+//            Iterator<String> it = objMap.keySet().iterator();
+//            while (it.hasNext()) {
+//                String key = it.next();
+//                BeanMapInfo vb = toMap(objMap.get(key), beanInfo.getTemplate().getJSONObject(key));
+//                Map<String, Object> objectValue = vb.getValue();
+//                value.put(key, objectValue);
+//                stack.push(beanInfo);
+//            }
+//
+//            Map<String, Object> arrMap = beanInfo.getArrayMap();
+//            it = arrMap.keySet().iterator();
+//            while (it.hasNext()) {
+//                String key = it.next();
+//                List<Map<String, Object>> list = new ArrayList<>();
+//                List valueList = (List) arrMap.get(key);
+//                for (int i = 0; i < valueList.size(); i++) {
+//                    Object v = valueList.get(i);
+//                    BeanMapInfo vb = toMap(v, beanInfo.getTemplate().getJSONArray(key)
+//                            .getJSONObject(0));
+//                    Map<String, Object> objectValue = vb.getValue();
+//                    list.add(objectValue);
+//                    stack.push(beanInfo);
+//                }
+//                value.put(key, list);
+//            }
+//            beanInfo.setFinish(true);
+//        }
+//        return basicMap;
+//    }
+//
+//    public <T> Map<String, Object> toMap(T bean, String templateName) throws
+//            IntrospectionException,
+//            InvocationTargetException, IllegalAccessException {
+//        BeanInfo beanInfo = Introspector.getBeanInfo(bean.getClass());
+//        PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+//        boolean finish = true;
+//        Map<String, Object> value = new HashMap<>();
+//        for (PropertyDescriptor property : propertyDescriptors) {
+//            String key = property.getName();
+//            if (!template.has(key)) {
+//                continue;
+//            }
+//            Object templateObj = template.get(key);
+//            if (templateObj instanceof JSONObject) {
+//                finish = false;
+//                objMap.put(key, property.getReadMethod().invoke(bean));
+//            } else if (templateObj instanceof JSONArray) {
+//                finish = false;
+//                arrMap.put(key, property.getReadMethod().invoke(bean));
+//            } else {
+//                value.put(key, property.getReadMethod().invoke(bean));
+//            }
+//        }
+//        BeanMapInfo info = new BeanMapInfo();
+//        info.setValue(value);
+//        info.setObjectMap(objMap);
+//        info.setArrayMap(arrMap);
+//        info.setFinish(finish);
+//        info.setTemplate(template);
+//        return info;
+//    }
 
     public <T> Map<String, Object> toMap(T bean, ResultMap resultMap) throws IntrospectionException, InvocationTargetException,
             IllegalAccessException {
@@ -73,18 +142,19 @@ public class XMLConfigBuilder {
                 if(field.getProperty().equals(propertyDescriptor.getName())) {
                     readMethod = propertyDescriptor.getReadMethod();
                     readMethod.setAccessible(true);
+                    break;
                 }
             }
             String key = field.getAlias();
             if(key == null || key.equals("")) {
                 key = field.getProperty();
             }
-            if (FieldType.OBJECT.name().equalsIgnoreCase(field.getType())) {
-                Map<String, Object> value = toMap(readMethod.invoke(bean), beanMap.get(field.getResultMapId()));
-                valueMap.put(key, value);
-            } else if (FieldType.ARRAY.name().equalsIgnoreCase(field.getType())) {
-                List list = toList((List) readMethod.invoke(bean), beanMap.get(field.getResultMapId()));
-                valueMap.put(key, list);
+            if (FieldType.OBJECT.getCode().equalsIgnoreCase(field.getType())) {
+//                Map<String, Object> value = toMap(readMethod.invoke(bean), beanMap.get(field.getResultMapId()));
+//                valueMap.put(key, value);
+            } else if (FieldType.ARRAY.getCode().equalsIgnoreCase(field.getType())) {
+//                List list = toList((List) readMethod.invoke(bean), beanMap.get(field.getResultMapId()));
+//                valueMap.put(key, list);
             } else {
                 valueMap.put(key, readMethod.invoke(bean));
             }
@@ -92,15 +162,47 @@ public class XMLConfigBuilder {
         return valueMap;
     }
 
+//
+//    public <T> Map<String, Object> toMap(T bean, ResultMap resultMap) throws IntrospectionException, InvocationTargetException,
+//            IllegalAccessException {
+//        Map<String, Object> valueMap = new LinkedHashMap<>();
+//        BeanInfo beanInfo = Introspector.getBeanInfo(bean.getClass());
+//        PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
+//        List<ResultField> fieldList = resultMap.getFieldList();
+//        for (ResultField field : fieldList) {
+//            Method readMethod = null;
+//            for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
+//                if(field.getProperty().equals(propertyDescriptor.getName())) {
+//                    readMethod = propertyDescriptor.getReadMethod();
+//                    readMethod.setAccessible(true);
+//                }
+//            }
+//            String key = field.getAlias();
+//            if(key == null || key.equals("")) {
+//                key = field.getProperty();
+//            }
+//            if (FieldType.OBJECT.name().equalsIgnoreCase(field.getType())) {
+//                Map<String, Object> value = toMap(readMethod.invoke(bean), beanMap.get(field.getResultMapId()));
+//                valueMap.put(key, value);
+//            } else if (FieldType.ARRAY.name().equalsIgnoreCase(field.getType())) {
+//                List list = toList((List) readMethod.invoke(bean), beanMap.get(field.getResultMapId()));
+//                valueMap.put(key, list);
+//            } else {
+//                valueMap.put(key, readMethod.invoke(bean));
+//            }
+//        }
+//        return valueMap;
+//    }
 
-    public List<Map<String, Object>> toList(List list, ResultMap resultMap) throws IllegalAccessException,
-            IntrospectionException, InvocationTargetException {
-        List<Map<String, Object>> mapList = new ArrayList<>();
-        for (int i = 0; i < list.size(); i++) {
-            mapList.add(toMap(list.get(i), resultMap));
-        }
-        return mapList;
-    }
+//
+//    public List<Map<String, Object>> toList(List list, ResultMap resultMap) throws IllegalAccessException,
+//            IntrospectionException, InvocationTargetException {
+//        List<Map<String, Object>> mapList = new ArrayList<>();
+//        for (int i = 0; i < list.size(); i++) {
+//            mapList.add(toMap(list.get(i), resultMap));
+//        }
+//        return mapList;
+//    }
 
 
     public Map<String, ResultMap> build() throws Exception {
